@@ -56,7 +56,12 @@ int k_main() // like main in a normal C program
 
     //Screwing around with jumping to user mode
 #define move_to_user_mode(stk, eip)\
-    asm(	"pushl %0\n" \
+    asm("movl %0, %%eax\n" \
+    "mov %%ax, %%ds\n" \
+    "mov %%ax, %%es\n" \
+    "mov %%ax, %%fs\n" \
+    "mov %%ax, %%gs\n" \
+    "pushl %0\n" \
     "pushl %1\n"\
     "pushl %2\n"\
     "pushl %3\n"\
@@ -64,18 +69,16 @@ int k_main() // like main in a normal C program
     "iret\n"\
     ::"i"(USER_DATA), "i"(stk), "i"(2+(1<<9)), "i"(USER_CODE), "i"(eip))
 
-    
-    move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
-
     reprogram_pic( 0x20, 0x28 );
-
-    enable();
 
     init_timer();
 
     enable_irq( 0 );
 
-    klprintf(19, "Entering while(1){}");
+    klprintf(19, "Starting Kernel");
+
+    enable();
+    move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
 
     //Enter temp idle loop
     for (;;)

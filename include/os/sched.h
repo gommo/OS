@@ -16,6 +16,10 @@
 
 #include <os/config.h>
 
+/**
+ * Initialises the scheduler and idle process
+ */
+void init_sched();
 /** Returns a new Process ID */
 ulong get_pid();
 /** Returns a new Thread ID */

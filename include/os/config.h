@@ -28,6 +28,5 @@ typedef enum {FALSE=0, TRUE=1} BOOL;
 
 #define PACK __attribute__   ((pack))
 
-
 #endif
 
