@@ -158,6 +158,9 @@
 					<File
 						RelativePath=".\include\os\taskm\sched.h">
 					</File>
+					<File
+						RelativePath=".\include\os\taskm\sema.h">
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -224,6 +227,9 @@
 				<File
 					RelativePath=".\kernel\taskm\sched.c">
 				</File>
+				<File
+					RelativePath=".\kernel\taskm\sema.c">
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -268,6 +274,12 @@
 		</File>
 		<File
 			RelativePath=".\init.S">
+		</File>
+		<File
+			RelativePath=".\link.ld">
+		</File>
+		<File
+			RelativePath=".\readme.txt">
 		</File>
 	</Files>
 	<Globals>

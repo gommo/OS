@@ -14,6 +14,10 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#ifndef     NULL
+#define     NULL        ((void*)0)
+#endif
+
 /* Some typedefs to ease finger ache */
 typedef unsigned int uint;
 typedef unsigned char uchar;
@@ -28,6 +32,9 @@ typedef enum {FALSE=0, TRUE=1} BOOL;
 
 #define PACK        __attribute__   ((pack))
 #define ALIGN(x)    __attribute__   ((aligned (x)))
+
+#define SUCCESS     0
+#define FAILURE     -1
 
 #endif
 

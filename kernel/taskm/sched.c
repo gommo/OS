@@ -24,14 +24,14 @@ extern struct tss_descriptor tss_desc;
 extern struct tss global_tss;
 
 /** Head of our Process list*/
-static struct process* process_head = NULL;
+static process_t* process_head = NULL;
 /** Current running process */
-static struct process* current_process = NULL;
+static process_t* current_process = NULL;
 
 /** Head of our Ready to Run Queue (This will always be the idle task)*/ 
-static struct thread* ready_head = NULL;
+static thread_t* ready_head = NULL;
 /** Current thread running */
-static struct thread* current_thread = NULL;
+static thread_t* current_thread = NULL;
 
 /** Current PID to give out */
 static ulong    current_pid = 0;
@@ -46,12 +46,12 @@ extern void idle_task(void* ptr);
  *
  * @param thread* Pointer to the new thread
  */
-void thread_switch(struct thread* new_thread);
+void thread_switch(thread_t* new_thread);
 /**
  * Switched to a new thread that hasnt been run before
  * @param thread* Pointer to the new thread
  */
-void thread_switch_to_new_thread(struct thread* new_thread);
+void thread_switch_to_new_thread(thread_t* new_thread);
 
 void init_sched()
 {
@@ -90,7 +90,7 @@ void init_sched()
         1, 1 );
 
     //Create our idle task
-    create_proc("Idle Task", &idle_task, NULL, PRIORITY_LOW);
+    create_process("Idle Task", &idle_task, NULL, PRIORITY_LOW);
     //Set the is_new flag to false as we manually start this
     get_idle_task()->thread_list->is_new = FALSE;
 
@@ -98,12 +98,12 @@ void init_sched()
     global_tss.esp0 = get_idle_task()->thread_list->task_state.esp0;
 }
 
-void create_proc(char* task_name, void* function, void* params, uint priority)
+void create_process(char* task_name, void* function, void* params, uint priority)
 {
-    struct process* proc;
-    struct thread* thread;
-    proc = (struct process*)k_malloc(sizeof(struct process));
-    thread = (struct thread*)k_malloc(sizeof(struct thread));
+    process_t* proc;
+    thread_t* thread;
+    proc = (process_t*)k_malloc(sizeof(process_t));
+    thread = (thread_t*)k_malloc(sizeof(thread_t));
     // Set the process name
     strcpy(proc->name, task_name);
     proc->pid = get_pid();
@@ -132,6 +132,7 @@ void create_proc(char* task_name, void* function, void* params, uint priority)
     thread->task_state.esp0 =  (ulong)&thread->kernel_stack[PAGE_SIZE >> 2];
     thread->is_new = TRUE;
     thread->handled_new = FALSE;
+    thread->sema = NULL;
 
     //Add the task to our process list
     if (ready_head == NULL)
@@ -144,10 +145,10 @@ void create_proc(char* task_name, void* function, void* params, uint priority)
     }
     else
     {
-        struct thread* th_ptr;
-        struct thread* th_list = ready_head;
+        thread_t* th_ptr;
+        thread_t* th_list = ready_head;
         
-        struct process* ptr = process_head;
+        process_t* ptr = process_head;
         //Add the process to the process list
         while (ptr->next != NULL)
             ptr = ptr->next;
@@ -177,7 +178,7 @@ void create_proc(char* task_name, void* function, void* params, uint priority)
 
 void schedule()
 {
-    struct thread* new_thread;
+    thread_t* new_thread;
     if (current_thread->next == NULL)
     {
         new_thread = ready_head;
@@ -194,7 +195,7 @@ void schedule()
         thread_switch(new_thread);
 }
 
-void thread_switch_to_new_thread(struct thread* new_thread)
+void thread_switch_to_new_thread(thread_t* new_thread)
 {
     asm volatile ("pushal\n\t"                      /* Push all general purpose registers onto stack  */
                   "movl    %0, %%eax\n\t"           /* Put the address of old_task_state in eax                         */
@@ -232,10 +233,10 @@ void thread_switch_to_new_thread(struct thread* new_thread)
     current_thread->task_state.eip);
 }
 
-void thread_switch(struct thread* new_thread)
+void thread_switch(thread_t* new_thread)
 {
     /** Local copy of current thread */
-    struct thread* current = current_thread;
+    thread_t* current = current_thread;
     /** Cache the handled new */
     char handled_new = new_thread->handled_new;
     new_thread->handled_new = FALSE;
@@ -246,7 +247,7 @@ void thread_switch(struct thread* new_thread)
 
     /* Set the current thread to be ready for execution again */
     current_thread->parent_process->state = TASK_READY;
-    /* Set the current process to this new process */
+    /* Set the current thread to this new thread */
     current_thread = new_thread;
     /* Set the current process to state running */
     current_thread->parent_process->state = TASK_RUNNING;
@@ -257,7 +258,7 @@ void thread_switch(struct thread* new_thread)
      
 }
 
-struct process* get_idle_task()
+process_t* get_idle_task()
 {
     return process_head;
 };
@@ -277,9 +278,13 @@ char* get_current_task_name()
     return current_process->name;
 }
 
-struct process* get_current_task()
+process_t* get_current_task()
 {
     return current_process;
 }
 
+thread_t* get_current_thread()
+{
+    return current_thread;
+}
 

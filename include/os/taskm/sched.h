@@ -55,12 +55,15 @@
     "iret\n"\
     ::"m"(ss), "m"(stk), "i"(2+(1<<9)), "m"(cs), "m"(eip):"%eax")
 
+/* Predeclare some semaphore structures */
+struct semaphore;
+
 /**
 * Task structure. This structure is probably the most important structure
 * in the OS. It is used to store all the important information about 
 * a task
 */
-struct process
+typedef struct process
 {
     /** Name of the Process */
     char    name[MAX_PROCESS_NAME];
@@ -77,14 +80,12 @@ struct process
     struct thread*      thread_list;
     /** The TTY number that this process can input/output to (-1 if no tty)*/
     int     tty_number;
-};
+} process_t;
 
 /** 
 * Thread structure
-*
-* @TODO Will add Semaphore pointers etc when we get to it
 */
-struct thread
+typedef struct thread
 {
     /* Thread ID */
     ulong                   thread_id;
@@ -106,12 +107,15 @@ struct thread
     uchar                   is_new;
     /** Priority of thread */
     uint                    priority;
-};
+    /** Semaphore pointer this thread is in */
+    struct semaphore*       sema;
+
+} thread_t;
 
 /**
 * Creates a process to run on this operating system
 */
-void create_proc(char* task_name, void* function, void* params, uint priority);
+void create_process(char* task_name, void* function, void* params, uint priority);
 /**
  * Initialises the scheduler and idle process
  */
@@ -121,12 +125,14 @@ ulong get_pid();
 /** Returns a new Thread ID */
 ulong get_tid();
 /** Returns the idle task */
-struct process* get_idle_task();
+process_t* get_idle_task();
 /** Returns the name of the process currently executing */
 char* get_current_task_name();
 /** Schedules the next process/thread to run */
 void schedule();
 /** Returns current process ptr */
-struct process* get_current_task();
+process_t* get_current_task();
+/** Returns current thread ptr */
+thread_t* get_current_thread();
 
 #endif
