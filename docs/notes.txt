@@ -24,6 +24,7 @@ SECTIONS
 }
 
 
+
 ==>> Grub should leave the machine in a set state
 http://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html#Machine%20state
 
