@@ -196,8 +196,9 @@ void create_gdt_segment_descriptor(   uint segment_index,
     gdt[segment_index].descripts.seg_descriptor.descriptor_type = 1; //Code OR Data
     gdt[segment_index].descripts.seg_descriptor.dpl = privilege_level;
     gdt[segment_index].descripts.seg_descriptor.present = present;
-    gdt[segment_index].descripts.seg_descriptor.segment_limit_15_00 = (segment_limit & 0x00FF0000) >> 16;
+    gdt[segment_index].descripts.seg_descriptor.segment_limit_19_16 = (segment_limit & 0x00FF0000) >> 16;
     gdt[segment_index].descripts.seg_descriptor.avl = 1;
+    gdt[segment_index].descripts.seg_descriptor.default_operation = 1;  //32 bit segment
     gdt[segment_index].descripts.seg_descriptor.zero = 0;
     gdt[segment_index].descripts.seg_descriptor.granularity = granularity;
     gdt[segment_index].descripts.seg_descriptor.base_address_31_24 = (base_address & 0xFF000000) >> 24;

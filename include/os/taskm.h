@@ -143,7 +143,7 @@ struct tss_descriptor
     unsigned zero1:1;
     unsigned dpl:2;
     unsigned present:1;
-    unsigned limit:4;
+    unsigned segment_limit_19_16:4;
     unsigned avl:1;
     unsigned zero2:2;
     unsigned granularity:1;

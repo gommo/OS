@@ -11,7 +11,7 @@
 ##########################################################################
 PROG = kernel.bin
 SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c kernel/timer.c kernel/taskm.c \
-       kernel/idle.c kernel\sched.c \
+       kernel/idle.c kernel/sched.c \
 	lib/stdio/vsprintf.c \
 	lib/string/isdigit.c lib/string/strlen.c lib/string/strnlen.c \
    app/user.c
