@@ -26,14 +26,16 @@ static ulong system_ticks = 0;
 /* The cached state of the interrupts. This starts of as FALSE
    as that is the state of the interrupts when we enter our kernel */
 static uchar interrupts_enabled = FALSE;
-
 /** This idea is taken from the linux 0.01 kernel. We set up a 
 user stack but we also use it as the starting kernel stack too */
 long    user_stack [ PAGE_SIZE >> 2 ];
-
 /** Initialise a Stack Descriptor pointing at the top of the user_stack
 (PAGE>>2)  and pointing to our data segment (0x10) */
 struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], KERNEL_DATA };
+/**
+ * This will be the global tss structure
+ */
+struct tss global_tss;
 
 int k_main() // like main in a normal C program
 {

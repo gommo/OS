@@ -81,26 +81,26 @@ struct task_struct
  */
 struct tss
 {
-    long    previous_task_link;        /* 16 high bits zero */
-    long    esp0;       
-    long    ss0;                       /* 16 high bits zero */
-    long    esp1;                       
-    long    ss1;                       /* 16 high bits zero */
-    long    esp2;                   
-    long    ss2;                       /* 16 high bits zero */
-    long    cr3;                    
-    long    eip;
-    long    eflags;
-    long    eax, ecx, edx, ebx;
-    long    esp, ebp, esi, edi;
-    long    es;                        /* 16 high bits zero */
-    long    cs;                        /* 16 high bits zero */
-    long    ss;                        /* 16 high bits zero */
-    long    ds;                        /* 16 high bits zero */
-    long    fs;                        /* 16 high bits zero */
-    long    gs;                        /* 16 high bits zero */
-    long    io_map_base;               /* bits 1-15 zero 
-                                          bit 0 contains Trap flag */
+    ulong    previous_task_link;        /* 16 high bits zero */
+    ulong    esp0;       
+    ulong    ss0;                       /* 16 high bits zero */
+    ulong    esp1;                       
+    ulong    ss1;                       /* 16 high bits zero */
+    ulong    esp2;                   
+    ulong    ss2;                       /* 16 high bits zero */
+    ulong    cr3;                    
+    ulong    eip;
+    ulong    eflags;
+    ulong    eax, ecx, edx, ebx;
+    ulong    esp, ebp, esi, edi;
+    ulong    es;                        /* 16 high bits zero */
+    ulong    cs;                        /* 16 high bits zero */
+    ulong    ss;                        /* 16 high bits zero */
+    ulong    ds;                        /* 16 high bits zero */
+    ulong    fs;                        /* 16 high bits zero */
+    ulong    gs;                        /* 16 high bits zero */
+    ulong    io_map_base;               /* bits 1-15 zero 
+                                           bit 0 contains Trap flag */
 };
 
 /**
