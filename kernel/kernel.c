@@ -15,6 +15,7 @@
 #include <os/kernel.h>
 #include <os/platform.h>
 #include <os/mm/paging.h>
+#include <os/mm/mm.h>
 #include <os/idt.h>
 #include <os/pic.h>
 #include <os/timer.h>
@@ -38,7 +39,6 @@ long    test_stack [PAGE_SIZE >> 2 ];
 /** Initialise a Stack Descriptor pointing at the top of the user_stack
 (PAGE>>2)  and pointing to our data segment (0x10) */
 struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], KERNEL_DATA };
-
 /**
  * This will be the global tss structure
  */
@@ -56,6 +56,7 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
     klprintf(2, "Low Memory: %d", info->mem_lower);
     klprintf(3, "High Memory: %d", info->mem_upper);
 
+    init_mm();
     init_idt();
     init_taskm();
 
@@ -211,4 +212,5 @@ void create_gdt_segment_descriptor(   uint segment_index,
     gdt[segment_index].descripts.seg_descriptor.granularity = granularity;
     gdt[segment_index].descripts.seg_descriptor.base_address_31_24 = (base_address & 0xFF000000) >> 24;
 }
+
 

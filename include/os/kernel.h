@@ -80,6 +80,7 @@ void k_clear_screen();
 unsigned int k_printf(char *message, unsigned int line);
 void klprintf(uint line, uchar* fmt, ...);
 
+
 #endif
 /*************************************************************************
 * "And don't EVER make the mistake that you can design something better 
