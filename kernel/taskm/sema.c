@@ -102,16 +102,23 @@ int semaphore_wait(sema_handle sem_handle)
     //Now decrement the sema_handles value
     sema->value --;
 
+    //As we have at least tried to enter in this critical section, ensure this thread
+    //knows its the one in this critical section
+    get_current_thread()->sema = sema;
+
     if (sema->value < 0)
     {
         //Need to block the current thread on this semaphore
+        
+        //Then call schedule
+        schedule();
 
+        //Hopefully when we are here means that we have become unblocked and 
+        //now can have the semaphore, hence we drop through to the code below
     }
 
-    //We are successfully in this critical section, ensure this thread
-    //knows its the one in this critical section
-
-    get_current_thread()->sema = sema;
+    //We are successfully in this critical section, we can successfully finish this
+    //function call
 
     if (interrupts_enabled)
         enable();
@@ -148,7 +155,7 @@ int semaphore_signal(sema_handle sem_handle)
 
 
     //Can only signal the semaphore if this thread is actually in this
-    //crictial section
+    //critical section
 
     if (get_current_thread()->sema == sema)
     {
@@ -158,6 +165,9 @@ int semaphore_signal(sema_handle sem_handle)
         //Ensure we don't go over 1
         if (sema->value > 1)
             sema->value = 1;
+
+        //We need to unblock threads on this semaphore
+
     }
     else
     {

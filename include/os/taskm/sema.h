@@ -8,6 +8,8 @@
 *
 * Compiler: gcc
 *
+* todo: Add semaphore destroy method
+*
 * Author: Colin Goudie
 **************************************************************************/
 #ifndef __SEMA_H__

@@ -33,6 +33,7 @@
 #define         PERMENANT_PROCESS               -1
 
 /* Defines for priorities */
+#define         PRIORITY_REALTIME               0       // Cannot be timesliced
 #define         PRIORITY_HIGH                   1
 #define         PRIORITY_NORMAL                 2
 #define         PRIORITY_LOW                    3
