@@ -113,6 +113,8 @@ typedef struct thread
     /** List of other threads blocked on the semaphore with this thread */
     struct thread*          snext;
     struct thread*          sprev;
+    /** The tick count that this thread should be woken up on */
+    ulong                   wake_up_time;
 
 } thread_t;
 
@@ -144,5 +146,7 @@ int sys_thread_exit();
 void remove_current_thread_from_running_queues();
 /** Adds the thread to the running queues */
 void add_thread_to_running_queues(thread_t* thrd);
+/** Sleeps the current thread */
+int sys_sleep(uint seconds);
 
 #endif

@@ -67,6 +67,8 @@ int semaphore_wait(sema_handle sem_handle);
  */
 int semaphore_signal(sema_handle sem_handle);
 
+int semaphore_destroy(sema_handle sem_handle);
+
 
 #endif
 

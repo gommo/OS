@@ -20,7 +20,8 @@ extern sema_handle sema;
 void test_function(void* ptr)
 {
     struct process* current;
-    static uint my_loops = 0;
+    uint my_loops = 0;
+    int i;
     ptr = ptr;
 
     current = get_current_task();
@@ -34,6 +35,8 @@ void test_function(void* ptr)
     for (;;)
     {
         //sema_wait(sema);
+        sleep(1);
+        my_loops = my_loops;
         klprintf(11, "In %s: %d", get_current_task_name(), my_loops++);
         //sema_signal(sema);
     }
@@ -42,7 +45,7 @@ void test_function(void* ptr)
 void test_function2(void* ptr)
 {
     struct process* current;
-    static uint my_loops = 0;
+    uint my_loops = 0;
     ptr = ptr;
 
     current = get_current_task();
@@ -55,8 +58,8 @@ void test_function2(void* ptr)
     
     for (;;)
     {
-        sema_wait(sema);    
+        //sema_wait(sema);    
         klprintf(13, "In %s: %d", get_current_task_name(), my_loops++);
-        sema_signal(sema);
+        //sema_signal(sema);
     }
 }

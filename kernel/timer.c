@@ -17,11 +17,10 @@
 #include <asm/io.h>
 #include <os/taskm/sched.h>
 
-#define TIMER_FRQ           100
-#define TIMER_CLOCK         1193180
-
 /** Saves the last time the scheduler was called */
 static ulong last_do_tick = 0;
+
+extern void check_sleeping_tasks(ulong ticks);
 
 void init_timer()
 {
@@ -54,7 +53,12 @@ void set_frequency(uint frequency)
 
 void timer_interrupt_handler()
 {
-    if (inc_system_ticks() > last_do_tick)
+    ulong temp = inc_system_ticks();
+
+    //Check sleeping tasks
+    check_sleeping_tasks(temp);
+
+    if (temp > last_do_tick)
     {
         last_do_tick = get_system_ticks();
         schedule();

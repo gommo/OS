@@ -16,6 +16,7 @@
 #include <os/mm/mm.h>
 #include <os/kernel.h>
 #include <os/tty.h>
+#include <os/timer.h>
 #include <asm/io.h>
 
 /** TSS Descriptor created in init.S */
@@ -52,6 +53,8 @@ static thread_t* last_ex_normal_thread = NULL;
 static thread_t* low_priority_head = NULL;
 /** Last executing low priority thread */
 static thread_t* last_ex_low_thread = NULL;
+/** Head of the sleep queue */
+static thread_t* sleep_head = NULL;
 
 /** Current PID to give out */
 static ulong    current_pid = 0;
@@ -132,7 +135,6 @@ void create_process(char* task_name, void* function, void* params, uint priority
     proc->time_to_live = PERMENANT_PROCESS;
     proc->tty_number = NO_TTY;
     proc->next = proc->prev = NULL;
-    
     thread->parent_process = proc;
     thread->next = NULL;
     thread->prev = NULL;
@@ -156,6 +158,7 @@ void create_process(char* task_name, void* function, void* params, uint priority
     thread->is_new = TRUE;
     thread->handled_new = FALSE;
     thread->sema = NULL;
+    thread->wake_up_time = 0;
 
     //Add the task to our process list
     if (low_priority_head == NULL && priority == PRIORITY_LOW)
@@ -372,8 +375,11 @@ void thread_switch_to_new_thread(thread_t* new_thread)
 
     //Make sure this new process is not new anymore
     new_thread->is_new = FALSE;
-    //Set the current threads process to ready
-    current_thread->parent_process->state = TASK_READY;
+    //Set the current threads process to ready if it was running
+    if (current_thread->parent_process->state == TASK_RUNNING)
+    {
+        current_thread->parent_process->state = TASK_READY;
+    }
     /** The current thread has handled a new task */
     current_thread->handled_new = TRUE;
     //Set the current thread to this new thread
@@ -412,8 +418,11 @@ void thread_switch(thread_t* new_thread)
     if (new_thread == current_thread)
         return;
 
-    /* Set the current thread to be ready for execution again */
-    current_thread->parent_process->state = TASK_READY;
+    /* Set the current thread to be ready for execution again if it was previously running*/
+    if (current_thread->parent_process->state == TASK_RUNNING)
+    {
+        current_thread->parent_process->state = TASK_READY;
+    }
     /* Set the current thread to this new thread */
     current_thread = new_thread;
     /* Set the current process to state running */
@@ -546,8 +555,112 @@ int sys_thread_exit()
 
     //OK, so now current_thread is not in any running queues
     
-
     //Probably set current_thread to the null thread then perform a task switch
+    return SUCCESS;
+}
+
+void check_sleeping_tasks(ulong ticks)
+{
+    //Iterate through tasks
+    thread_t* temp;
+
+    //Only check if there are sleeping tasks
+    if (sleep_head == NULL)
+        return;
+
+    temp = sleep_head;
+
+    while (temp != NULL) 
+    {
+        if (temp->wake_up_time <= ticks)
+        {
+            //Wake this thread up
+            //Remove it from the sleep list
+            if (temp->snext != NULL)
+            {
+                sleep_head = temp->snext;
+                temp->snext->sprev = NULL;
+                add_thread_to_running_queues(temp);
+                temp->parent_process->state = TASK_READY;
+                temp = temp->snext;
+            }
+            else
+            {
+                sleep_head = NULL;
+                add_thread_to_running_queues(temp);
+                temp->parent_process->state = TASK_READY;
+                break;
+            }
+        }
+        else
+        {
+            //Don't keep checking as they are stored in order
+            break;
+        }
+    }
+
+}
+
+int sys_sleep(uint seconds)
+{
+    //Add our task to the sleep list
+    thread_t* current = get_current_thread();
+    thread_t* t;
+
+    current->wake_up_time = get_system_ticks() + (ulong)(seconds * TIMER_FRQ);
+
+    if (sleep_head == NULL)
+    {
+        sleep_head = current_thread;
+        current_thread->snext = NULL;
+        current_thread->sprev = NULL;
+    }
+    else
+    {
+        t = sleep_head;
+
+        while(current->wake_up_time >= t->wake_up_time) 
+        {
+            if (t->snext == NULL)
+            {
+                //At end of queue
+                break;
+            }
+            t = t->snext;
+        }
+
+        if (current->wake_up_time >= t->wake_up_time)
+        {
+            //We are at end of queue add to end
+            t->snext = current;
+            current->sprev = t;
+            current->snext = NULL;
+        }
+        else
+        {
+            //Insert here
+            thread_t* temp;
+            temp = t->sprev->snext;
+            t->sprev->snext = current;
+            current->sprev = t;
+            temp->sprev = current;
+            current->snext = temp;
+        }
+
+        //remove current from its queue
+        remove_current_thread_from_running_queues();
+
+        //Before we shedule we need to set currrent thread to blocked for the scheduler
+        current->parent_process->state = TASK_STOPPED;
+
+        //Then call schedule
+        schedule();
+
+        //Once we're here It should mean we have slept
+    }
+
+
+
     return SUCCESS;
 }
 

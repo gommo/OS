@@ -20,6 +20,9 @@
 
 #include <os/config.h>
 
+#define TIMER_FRQ           100
+#define TIMER_CLOCK         1193180
+
 /**
  * This function initialises our timer and the interrupt routines ready
  * to handle our timer

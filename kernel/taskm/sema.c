@@ -19,6 +19,8 @@
 static semaphore_t* sema_head = NULL;
 /* This is the tail of our semaphore list */
 static semaphore_t* sema_tail = NULL;
+/** Holds the current sema_handle number to hand out */
+static sema_handle next_handle = 1;
 
 int semaphore_create(sema_handle* sem_handle, int value)
 {
@@ -41,7 +43,7 @@ int semaphore_create(sema_handle* sem_handle, int value)
     if (sema_tail == NULL) //First semaphore entry
     {
         //Initialise this new semaphore
-        sema->handle = 1;
+        sema->handle = next_handle++;
         sema->value = value;
         sema->blocked_list = NULL;
         
@@ -53,7 +55,7 @@ int semaphore_create(sema_handle* sem_handle, int value)
     else
     {
         //Initialise this new semaphore
-        sema->handle = sema_tail->handle + 1;
+        sema->handle = next_handle++;
         sema->value = value;
         sema->blocked_list = NULL;
 
@@ -119,6 +121,9 @@ int semaphore_wait(sema_handle sem_handle)
         if (block_list == NULL) 
         {
             //No threads currently blocked on this semaphore
+            sema->blocked_list = current;
+            current->sprev = sema->blocked_list;
+            current->snext = NULL;
         }
         else
         {
@@ -131,10 +136,10 @@ int semaphore_wait(sema_handle sem_handle)
             current->sprev = block_list;
             block_list->snext = current;
             current->snext = NULL;
-
-            //remove current from its queue
-            remove_current_thread_from_running_queues();
         }
+
+        //remove current from its queue
+        remove_current_thread_from_running_queues();
 
         //Before we shedule we need to set currrent thread to blocked for the scheduler
         current->parent_process->state = TASK_STOPPED;
@@ -166,10 +171,13 @@ int semaphore_signal(sema_handle sem_handle)
     current = get_current_thread();
     //First find this semaphore
     int i=1;
-    semaphore_t* sema = NULL;
+    semaphore_t* sema = sema_head;
 
     while (i < (int)sem_handle)
     {
+        if (sema == NULL)
+            break;
+
         if (sema->next != NULL)
         {
             sema = sema->next;
@@ -226,3 +234,10 @@ int semaphore_signal(sema_handle sem_handle)
 
     return SUCCESS;
 }
+
+int semaphore_destroy(sema_handle sem_handle)
+{
+
+    return SUCCESS;
+}
+

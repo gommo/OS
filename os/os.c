@@ -38,10 +38,28 @@ int sema_signal(sema_handle sem_handle)
     return result;
 }
 
+int sema_destroy(sema_handle sem_handle)
+{
+    int result;
+    SYSTEM_CALL_FUNC( SYS_SEMA_DESTROY, &sem_handle, &result);
+    return result;
+}
+
 int thread_exit() 
 {
     int result;
     SYSTEM_CALL_FUNC( SYS_THREAD_EXIT, 0, &result);
+
+    //Dodgy (Timer interrupt will interrupt this and we will never come back here
+    //Obviously a memory leak as this task will always be presetn
+    for(;;){}
+    return result;
+}
+
+int sleep(uint seconds)
+{
+    int result;
+    SYSTEM_CALL_FUNC( SYS_SLEEP, &seconds, &result);
     return result;
 }
 

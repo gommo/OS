@@ -23,5 +23,9 @@ int sema_wait(sema_handle sem_handle);
 
 int sema_signal(sema_handle sem_handle);
 
+int sema_destroy(sema_handle sem_handle);
+
+int sleep(uint seconds);
+
 #endif
 
