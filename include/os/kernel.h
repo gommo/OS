@@ -15,10 +15,7 @@
 #define __KERNEL_H__
 
 #include <os/platform.h>
-
-/* Kernel Code Segment Selector Value */
-#define     KERNEL_CODE          0x8
-#define     KERNEL_DATA          0x10
+#include <os/segment.h>
 
 struct stack
 {
@@ -85,6 +82,15 @@ ulong get_system_ticks();
  * Increments the number of kernel ticks by one
  */
 void inc_system_ticks();
+
+void create_gdt_segment_selector(   uint segment_index,
+                                    uint base_address,
+                                    uint segment_limit,
+                                    uint segment_type,
+                                    uint descriptor_type,
+                                    uint privilege_level,
+                                    uint present,
+                                    uint granularity );
 
 void k_clear_screen();
 unsigned int k_printf(char *message, unsigned int line);

@@ -157,3 +157,15 @@ void restore_flags(ulong flags)
                     :: "r" (flags) : "memory");
 }
 
+void create_gdt_segment_selector(   uint segment_index,
+                                 uint base_address,
+                                 uint segment_limit,
+                                 uint segment_type,
+                                 uint descriptor_type,
+                                 uint privilege_level,
+                                 uint present,
+                                 uint granularity )
+{
+
+}
+
