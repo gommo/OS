@@ -225,6 +225,8 @@ int semaphore_signal(sema_handle sem_handle)
             add_thread_to_running_queues(head_of_blocked);
 
             head_of_blocked->parent_process->state = TASK_READY;
+            head_of_blocked->snext = NULL;
+            head_of_blocked->sprev = NULL;
         }
     }
     else

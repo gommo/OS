@@ -43,7 +43,7 @@ Then run the prep script
 
 $ prep
 
-You know have grub_disk.img that contains the bootable OS.
+You now have grub_disk.img that contains the bootable OS.
 
 Run BOCH'S i386 emulator or 'dd' the img to a floppy disk.
 

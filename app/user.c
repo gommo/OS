@@ -33,8 +33,10 @@ void test_function(void* ptr)
     
     for (;;)
     {
+        sema_wait(sema);
         klprintf(11, "In %s: %d", get_current_task_name(), my_loops++);
-        sleep(1);
+        msleep(150);
+        sema_signal(sema);
     }
 }
 
@@ -54,7 +56,9 @@ void test_function2(void* ptr)
     
     for (;;)
     {
+        sema_wait(sema);
         klprintf(13, "In %s: %d", get_current_task_name(), my_loops++);
-        sleep(1);
+        msleep(230);
+        sema_signal(sema);
     }
 }

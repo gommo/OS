@@ -489,6 +489,8 @@ void remove_current_thread_from_running_queues()
             //Error don't need to do anything here
             break;
         }
+
+        next->prev = NULL;
     }
     else if (thrd->next == NULL)
     {
@@ -645,21 +647,29 @@ void check_sleeping_tasks(ulong ticks)
             {
                 sleep_head = temp->snext;
                 temp->snext->sprev = NULL;
+                klprintf(7, "&Wake up Thread 0x%08x", temp);
                 add_thread_to_running_queues(temp);
                 temp->parent_process->state = TASK_READY;
+                thread_t* tt = temp;
                 temp = temp->snext;
+                tt->snext = NULL;
+                tt->sprev = NULL;
             }
             else
             {
                 sleep_head = NULL;
                 add_thread_to_running_queues(temp);
+                klprintf(7, "Wake up Thread 0x%08x", temp);
                 temp->parent_process->state = TASK_READY;
+                temp->snext = NULL;
+                temp->sprev = NULL;
                 break;
             }
         }
         else
         {
             //Don't keep checking as they are stored in order
+            klprintf(7, "None to Wake");
             break;
         }
     }
