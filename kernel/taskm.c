@@ -21,4 +21,6 @@ void init_taskm(void)
     tss_desc->base_address_15_00 = 0xFFFF;
     tss_desc->base_address_23_16 = 0xFF;
     tss_desc->base_address_31_42 = 0xFF;
+
+    klprintf(18, "Wrote to tss_desc");
 }
