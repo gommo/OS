@@ -13,19 +13,29 @@
  * Author: Colin Goudie
  *
  *************************************************************************/
-                       
+
+.text
+.align 4
+
 .global init
 .extern k_main, start_stack
 
+
 init:
     
-    call       setup_idt                       # Sets up our IDT
-    call       setup_gdt                       # Sets up our GDT
-    #lss        start_stack, %esp
+    call        setup_idt                       # Sets up our IDT
+    call        setup_gdt                       # Sets up our GDT
+    movl        $0x10, %eax                     # Reload all segment registers
+    mov         %ax, %ds
+    mov         %ax, %es
+    mov         %ax, %fs
+    mov         %ax, %gs
+    movl        $0xB0B0B0B0, %ebx
+    lss         start_stack, %esp
     
     /* Reset EFLAGS */
-    pushl   $0
-    popf
+#    pushl   $0
+ #   popf
     
     jmp k_main
 

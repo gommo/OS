@@ -40,7 +40,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM	1
-#include <multiboot.h>
+#include <os/multiboot.h>
 	
 	.text
 
