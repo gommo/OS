@@ -78,12 +78,4 @@ multiboot_entry:
 
 	/* Jump to our initialisation code */
 	call	init
-
-    /* If we ever get back here just halt the computer */
-    cli
-    hlt
-
-
-#	/* Our stack area.  */
-#	.comm	stack, STACK_SIZE
 	

@@ -34,10 +34,13 @@ init:
     lss         start_stack, %esp
     
     /* Reset EFLAGS */
-#    pushl   $0
- #   popf
+    pushl   $0
+    popf
     
-    jmp k_main
+    call k_main                                 # Jump to our C code
+
+    cli
+    hlt
 
 idt_descr:
     .word   256*8-1                             # IDT has 256 entries
