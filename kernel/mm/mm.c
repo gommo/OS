@@ -118,15 +118,17 @@ void* k_malloc(size_t size)
                 //This is the 2nd+ chunk in our multichunk investigation
                 multi_chunk_size += chunk_size;
 
-                if (multi_chunk_size == new_size)
+                if (multi_chunk_size >= new_size)
                 {
-                    //
+                    //We found a multichunk big enough
+                    //Set the allocation size
+                    *(multi_chunk_first) = multi_chunk_size + multi_chunk_count;
+                    *(multi_chunk_first) |= CHUNK_ALLOCATED_MASK;
+                    return (void*)(multi_chunk_first+1);
                 }
-                else if (multi_chunk_size > new_size)
-                {
 
-                }
-
+                multi_chunk_size += chunk_size;
+                multi_chunk_count++;
                 ptr += chunk_size + 1;
             }
         }

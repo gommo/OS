@@ -12,11 +12,11 @@
 PROG = kernel.bin
 SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c kernel/timer.c \
        kernel/idle.c \
-       kernel/taskm/taskm.c kernel/taskm/sched.c \
+       kernel/taskm/sched.c \
        kernel/mm/mm.c \
 	lib/stdio/vsprintf.c \
 	lib/string/isdigit.c lib/string/strlen.c lib/string/strnlen.c \
-   lib/string/memset.c \
+   lib/string/memset.c lib/string/strcpy.c \
    app/user.c
 OBJS = $(SRCS:.c=.o)
 INCS = -I./include -I./ -I./include/lib

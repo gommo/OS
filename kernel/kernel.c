@@ -19,7 +19,7 @@
 #include <os/idt.h>
 #include <os/pic.h>
 #include <os/timer.h>
-#include <os/taskm/taskm.h>
+#include <os/taskm/sched.h>
 #include <console.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -48,16 +48,22 @@ struct tss global_tss;
  */
 extern desc_table gdt;
 
-typedef struct test_structure
+typedef struct test_structure_1
+{
+    uint one;
+    uint two;
+} test_struc1;
+
+typedef struct test_structure_2
 {
     uint one;
     uint two;
     uint three;
-    uchar four;
-} test_struc;
-
+} test_struc2;
+extern void idle_task(void* ptr);
 int k_main(multiboot_info_t* info) // like main in a normal C program
 {
+    struct process* idle;
 	k_clear_screen();
     k_printf("booting...", 0);
 
@@ -66,10 +72,10 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
 
     init_mm();
     init_idt();
-    init_taskm();
+    init_sched();
 
     //Screwing around with jumping to user mode
-#define move_to_user_mode(stk, eip)\
+#define move_to_user_mode(ss, stk, cs, eip)\
     asm("movl %0, %%eax\n" \
     "mov %%ax, %%ds\n" \
     "mov %%ax, %%es\n" \
@@ -81,7 +87,7 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
     "pushl %3\n"\
     "pushl %4\n"\
     "iret\n"\
-    ::"i"(USER_DATA), "i"(stk), "i"(2+(1<<9)), "i"(USER_CODE), "i"(eip))
+    ::"m"(ss), "m"(stk), "i"(2+(1<<9)), "m"(cs), "m"(eip):"%eax")
 
     reprogram_pic( 0x20, 0x28 );
 
@@ -93,8 +99,14 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
 
     enable();
 
-    move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
+    idle = get_idle_task();
 
+    //move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
+    //move_to_user_mode( get_idle_task()->thread_list->task_state.esp, get_idle_task()->thread_list->task_state.eip);
+    move_to_user_mode(idle->thread_list->task_state.ss, 
+                      idle->thread_list->task_state.esp, 
+                      idle->thread_list->task_state.cs, 
+                      idle->thread_list->task_state.eip);
     //Enter temp idle loop
     for (;;)
         asm("hlt");

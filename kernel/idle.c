@@ -15,7 +15,8 @@
 void idle_task(void* ptr)
 {
     ptr = ptr;
+    klprintf(9, "In IdleTask");
 
-    for (;;)
-        asm volatile ("hlt");
+    for (;;){}
+        //asm volatile ("hlt");
 }

@@ -158,9 +158,6 @@
 					<File
 						RelativePath=".\include\os\taskm\sched.h">
 					</File>
-					<File
-						RelativePath=".\include\os\taskm\taskm.h">
-					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -224,9 +221,6 @@
 				<File
 					RelativePath=".\kernel\taskm\sched.c">
 				</File>
-				<File
-					RelativePath=".\kernel\taskm\taskm.c">
-				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -240,6 +234,9 @@
 				</File>
 				<File
 					RelativePath=".\lib\string\memset.c">
+				</File>
+				<File
+					RelativePath=".\lib\string\strcpy.c">
 				</File>
 				<File
 					RelativePath=".\lib\string\strlen.c">

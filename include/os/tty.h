@@ -14,6 +14,12 @@
 #ifndef __TTY_H__
 #define __TTY_H__
 
+#define         NO_TTY                          -1
+#define         TTY_1                           1
+#define         TTY_2                           2
+#define         TTY_3                           3
+#define         TTY_4                           4
+
 /**
  * This structure contains the information needed about a tty device
  *
