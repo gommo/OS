@@ -1,3 +1,29 @@
+Linking for Grub Loading Virtual Addresses (http://www.mega-tokyo.com/forum/index.php?board=1;action=display;threadid=5702)
+OUTPUT_FORMAT("elf32-i386")
+ENTRY(entry)
+virt = 0xC0000000; /* 3 gig */
+phys = 0x100000; /* 1 meg */
+SECTIONS
+{  .text virt : AT(phys)
+    {  code = .;
+        *(.text)
+        . = ALIGN(4096); 
+    }
+    .data :  AT(phys + (data - code))
+    {  data = .;
+        *(.data)
+        . = ALIGN(4096); 
+    }
+    .bss :  AT(phys + (bss - code))
+    {  bss = .;
+        *(.bss)
+        *(COMMON)
+        . = ALIGN(4096); 
+    }
+    end = .; 
+}
+
+
 ==>> Grub should leave the machine in a set state
 http://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html#Machine%20state
 
