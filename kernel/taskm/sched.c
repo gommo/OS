@@ -22,22 +22,36 @@
 extern struct tss_descriptor tss_desc;
 /** Global TSS Structure created in kernel.c */
 extern struct tss global_tss;
-/** Head of our High priority process list */
-static struct process* head_hp = NULL;
+
+/** Head of our Process list*/
+static struct process* process_head = NULL;
 /** Current running process */
-static struct process* current = NULL;
+static struct process* current_process = NULL;
+
+/** Head of our Ready to Run Queue (This will always be the idle task)*/ 
+static struct thread* ready_head = NULL;
+/** Current thread running */
+static struct thread* current_thread = NULL;
+
 /** Current PID to give out */
 static ulong    current_pid = 0;
 /** Current TID to give out */
 static ulong    current_tid = 0;
+/** Context Switch assembly function */
+extern void context_switch( ulong* old_task_state, ulong* new_task_state );
 /** Our extern idle function task */
 extern void idle_task(void* ptr);
 /**
- * Switches to a new process
+ * Switches to a new thread
  *
- * @param process* Pointer to the new process
+ * @param thread* Pointer to the new thread
  */
-void process_switch(struct process* new_process);
+void thread_switch(struct thread* new_thread);
+/**
+ * Switched to a new thread that hasnt been run before
+ * @param thread* Pointer to the new thread
+ */
+void thread_switch_to_new_thread(struct thread* new_thread);
 
 void init_sched()
 {
@@ -54,13 +68,7 @@ void init_sched()
     tss_desc.present = 0x1;
     tss_desc.segment_limit_15_00 = sizeof(struct tss) & 0xFFFF;
     tss_desc.segment_limit_19_16 = sizeof(struct tss) >> 16;
-/*
-    asm volatile ("movl %%esp, %%eax\n\t" : "=r" (temp) :: "memory");
-    global_tss.ss0 = KERNEL_DATA;
-    global_tss.esp0 = temp;
 
-    asm volatile ("ltr %%ax\n\t" :: "a" (SINDEX_TSS << 3));
-*/
     asm volatile ("ltr %%ax\n\t" :: "a" (SINDEX_TSS << 3));
     // Just to test and start I'm going to make the user code segments the whole
     // memory space too (16MB) (Obviously dumb)
@@ -84,7 +92,7 @@ void init_sched()
     //Create our idle task
     create_proc("Idle Task", &idle_task, NULL);
     //Set the is_new flag to false as we manually start this
-    get_idle_task()->is_new = FALSE;
+    get_idle_task()->thread_list->is_new = FALSE;
 
     global_tss.ss0 = get_idle_task()->thread_list->task_state.ss0;
     global_tss.esp0 = get_idle_task()->thread_list->task_state.esp0;
@@ -99,15 +107,17 @@ void create_proc(char* task_name, void* function, void* params)
     // Set the process name
     strcpy(proc->name, task_name);
     proc->pid = get_pid();
-    proc->state = TASK_WAITING;
+    proc->state = TASK_READY;
     proc->thread_list = thread;
     proc->time_to_live = PERMENANT_PROCESS;
     proc->tty_number = NO_TTY;
     proc->next = proc->prev = NULL;
-    proc->is_new = TRUE;
-
+    
+    thread->parent_process = proc;
     thread->next = NULL;
     thread->prev = NULL;
+    thread->pnext = NULL;
+    thread->pprev = NULL;
     thread->thread_id = get_tid();
     thread->task_state.eip = (ulong)(function);
     thread->task_state.cs = USER_CODE;
@@ -119,93 +129,132 @@ void create_proc(char* task_name, void* function, void* params)
     thread->task_state.gs = USER_DATA;
     thread->task_state.ss0 = KERNEL_DATA;
     thread->task_state.esp0 =  (ulong)&thread->kernel_stack[PAGE_SIZE >> 2];
+    thread->is_new = TRUE;
 
     //Add the task to our process list
-    if (head_hp == NULL)
+    if (ready_head == NULL)
     {
         //This is the first task 
-        head_hp = proc;
-        current = proc;
+        ready_head = thread;
+        current_thread = thread;
+        process_head = proc;
+        current_process = proc;
     }
     else
     {
-        struct process* ptr = head_hp;
+        struct thread* th_ptr;
+        struct thread* th_list = ready_head;
+        
+        struct process* ptr = process_head;
+        //Add the process to the process list
         while (ptr->next != NULL)
             ptr = ptr->next;
         //We have the last process on the list
         ptr->next = proc;
         proc->prev = ptr;
+
+        //Add the processes threads to the ready queue
+        //Find the tail of the ready queue
+        while (th_list->next != NULL)
+            th_list = th_list->next;
+
+        th_ptr = proc->thread_list;
+        while (th_ptr != NULL)
+        {
+            //Set the end of thread list to our new thread
+            th_list->next = th_ptr;
+            //Set out new threads prev to the end of the list
+            th_ptr->prev = th_list;
+            //Set the end of the list to our new thread
+            th_list = th_ptr;
+            //Get the next thread belonging to this new process
+            th_ptr = th_ptr->pnext;
+        }
     }
 }
 
 void schedule()
 {
-    struct process* new_process;
-    if (current->next == NULL)
+    struct thread* new_thread;
+    if (current_thread->next == NULL)
     {
-        new_process = head_hp;
+        new_thread = ready_head;
     }
     else
     {
-        new_process = current->next;
+        new_thread = current_thread->next;
     }
-    process_switch(new_process);
+    if (new_thread->is_new)
+        thread_switch_to_new_thread(new_thread);
+    else
+        thread_switch(new_thread);
 }
 
-void process_switch(struct process* new_process)
+void thread_switch_to_new_thread(struct thread* new_thread)
 {
-    //Don't bother switching if there is only one task
-    if (new_process == current)
-        return;
-
-    //Save this kernels stack
-    asm("movl   %%esp, %%eax\n\t"
-        "movl   %%eax, %0\n\t"
-        : "=m"(current->thread_list->task_state.esp0));
-
-    if (new_process->is_new)
-    {
-        //Make sure this new process is not new anymore
-        new_process->is_new = FALSE;
-        //Set the current process to this new process
-        current = new_process;
-        //Set up the global tss to use the new processes kernel stack
-        global_tss.ss0 = new_process->thread_list->task_state.ss0;
-        global_tss.esp0 = new_process->thread_list->task_state.esp0;
-
-        //Switch over to the new processes kernel stack
-        asm("movl   %0, %%esp\n\t"
-            "movl   %1, %%ss\n\t"
-            ::"m"(new_process->thread_list->task_state.esp0), "m"(new_process->thread_list->task_state.ss0));
-
-        //Signal the end of interrupt
-        outb(0x20, 0x20);
-        //Enable interrupts
-        enable();
-
-        jump_to_ring3_task(new_process->thread_list->task_state.ss,
-                            new_process->thread_list->task_state.esp,
-                            new_process->thread_list->task_state.cs,
-                            new_process->thread_list->task_state.eip);
-    }
-
+    //Make sure this new process is not new anymore
+    new_thread->is_new = FALSE;
+    //Set the current threads process to ready
+    current_thread->parent_process->state = TASK_READY;
+    //Set the current thread to this new thread
+    current_thread = new_thread;
+    current_thread->parent_process->state = TASK_RUNNING;
+    current_process = current_thread->parent_process;
     //Set up the global tss to use the new processes kernel stack
-    global_tss.ss0 = new_process->thread_list->task_state.ss0;
-    global_tss.esp0 = new_process->thread_list->task_state.esp0;
-
-    //Set the current process to this new process
-    current = new_process;
+    global_tss.ss0 = current_thread->task_state.ss0;
+    global_tss.esp0 = current_thread->task_state.esp0;
 
     //Switch over to the new processes kernel stack
-    asm("movl   %0, %%esp\n\t"
+    asm volatile ("movl   %0, %%esp\n\t"
+    "movl   %1, %%ss\n\t"
+    ::"m"(current_thread->task_state.esp0), "m"(current_thread->task_state.ss0));
+
+    //Signal the end of interrupt
+    outb(0x20, 0x20);
+    //Enable interrupts
+    enable();
+
+    jump_to_ring3_task(current_thread->task_state.ss,
+    current_thread->task_state.esp,
+    current_thread->task_state.cs,
+    current_thread->task_state.eip);
+   
+}
+
+void thread_switch(struct thread* new_thread)
+{
+    //Don't bother switching if there is only one task
+    if (new_thread == current_thread)
+        return;
+
+    //Save this kernels stack pointer
+    /*asm volatile ("movl   %%esp, %%eax\n\t"
+                  "movl   %%eax, %0\n\t"
+                  : "=m"(current_thread->task_state.esp0));
+
+    */
+    context_switch( &current_thread->task_state, &new_thread->task_state );
+    
+    //Set up the global tss to use the new processes kernel stack
+    global_tss.ss0 = new_thread->task_state.ss0;
+    global_tss.esp0 = new_thread->task_state.esp0;
+
+    current_thread->parent_process->state = TASK_READY;
+    //Set the current process to this new process
+    current_thread = new_thread;
+    current_thread->parent_process->state = TASK_RUNNING;
+    current_process = current_thread->parent_process;
+
+    //Switch over to the new processes kernel stack
+    asm volatile ("movl   %0, %%esp\n\t"
         "movl   %1, %%ss\n\t"
-        ::"m"(new_process->thread_list->task_state.esp0), "m"(new_process->thread_list->task_state.ss0));
+        ::"m"(current_thread->task_state.esp0), "m"(current_thread->task_state.ss0));
     
 }
 
 struct process* get_idle_task()
 {
-    return head_hp;
+    return process_head;
 };
 
 ulong get_pid()
@@ -220,12 +269,12 @@ ulong get_tid()
 
 char* get_current_task_name()
 {
-    return current->name;
+    return current_process->name;
 }
 
 struct process* get_current_task()
 {
-    return current;
+    return current_process;
 }
 
 

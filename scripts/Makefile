@@ -28,13 +28,13 @@ LD = ld
 LINKFILE = link.ld
 LDFLAGS = -nostdlib -nodefaultlibs -N -T link.ld -Map map
 
-all: boot init systemcall $(OBJS)	build
+all: boot init context systemcall $(OBJS)	build
 
 %.o: %.c
 				$(CC) -c $(CFLAGS) $(INCS) $*.c -o $*.o
 
 build: $(OBJS)
-				$(LD)  $(LDFLAGS) -o $(PROG) boot.o init.o systemcall.o $(OBJS)
+				$(LD)  $(LDFLAGS) -o $(PROG) boot.o init.o context_switch.o systemcall.o $(OBJS)
 
 boot:	boot.S
 				$(AS) -c $(INCS) $(ASFLAGS) $? -o boot.o
@@ -44,6 +44,10 @@ init:	init.S
 
 systemcall:	kernel/system_call.S
 				$(AS) -c $(INCS) $(ASFLAGS) $? -o systemcall.o
+
+context:	kernel/taskm/context_switch.S
+				$(AS) -c $(INCS) $(ASFLAGS) $? -o context_switch.o
+
 clean:
 				rm -f *.o $(OBJS) $(PROG)
 

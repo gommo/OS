@@ -26,7 +26,7 @@
 
 /** Task state defines */
 #define         TASK_RUNNING                    3
-#define         TASK_WAITING                    2
+#define         TASK_READY                      2
 #define         TASK_STOPPED                    1
 #define         TASK_ZOMBIE                     0
 
@@ -37,7 +37,7 @@
  * to ring 3 code
  */
 #define jump_to_ring3_task(ss, stk, cs, eip)\
-    asm("movl %0, %%eax\n" \
+    asm volatile("movl %0, %%eax\n" \
     "mov %%ax, %%ds\n" \
     "mov %%ax, %%es\n" \
     "mov %%ax, %%fs\n" \
@@ -68,12 +68,10 @@ struct process
     long   time_to_live;
     /** State of the Task. 0 = zombie, 1 = stopped, 2 = waiting, 3 = running */
     uchar  state;
-    /** Pointer to the list of threads that make up this process */
+    /** Pointer to the list head of threads that make up this process */
     struct thread*      thread_list;
     /** The TTY number that this process can input/output to (-1 if no tty)*/
     int     tty_number;
-    /** Flag to indicate if this task is new */
-    uchar   is_new;
 };
 
 /** 
@@ -85,13 +83,20 @@ struct thread
 {
     /* Thread ID */
     ulong                   thread_id;
-    /* The links to create a thread list */
+    /* The process this thread belongs to */
+    struct process*         parent_process;
+    /* The links to other threads in this queue */
     struct thread*          next;
     struct thread*          prev;
+    /* The links to other threads in belonging to parent_process */
+    struct thread*          pnext;
+    struct thread*          pprev;
     /** Threads Task State Structure, this is where all the data a thread needs is held */
     struct tss              task_state;
     long                    user_stack[PAGE_SIZE >> 2];
     long                    kernel_stack[PAGE_SIZE >> 2];
+    /** Flag to indicate if this thread is new */
+    uchar   is_new;
 };
 
 /**

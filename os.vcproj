@@ -219,6 +219,9 @@
 				Name="taskm"
 				Filter="">
 				<File
+					RelativePath=".\kernel\taskm\context_switch.S">
+				</File>
+				<File
 					RelativePath=".\kernel\taskm\sched.c">
 				</File>
 			</Filter>
