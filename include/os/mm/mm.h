@@ -20,8 +20,11 @@
 //=============
 // Dynamic Memory #defines and functions
 
-#define     KERNEL_HEAP_SIZE        (2 * 1024 * 1024)
-#define     ALLOCATION_SIZE         (512)
+#define     KERNEL_HEAP_SIZE            (2 * 1024 * 1024)
+#define     KERNEL_HEAP_SIZE_IN_UINT    (2 * 1024 * 1024 / 4)
+#define     ALLOCATION_SIZE             (512)
+
+#define     CHUNK_ALLOCATED_MASK        0x80000000
 
 void* k_malloc(size_t size);
 void k_free(void* ptr);

@@ -48,6 +48,14 @@ struct tss global_tss;
  */
 extern desc_table gdt;
 
+typedef struct test_structure
+{
+    uint one;
+    uint two;
+    uint three;
+    uchar four;
+} test_struc;
+
 int k_main(multiboot_info_t* info) // like main in a normal C program
 {
 	k_clear_screen();
@@ -84,6 +92,7 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
     klprintf(19, "Starting Kernel");
 
     enable();
+
     move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
 
     //Enter temp idle loop

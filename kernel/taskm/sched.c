@@ -26,7 +26,7 @@ static struct process process_list[MAX_PROCESSES];
 void init_sched()
 {
     //Initialise our idle task
-    strcpy( process_list[0].name, "Idle Task" );
+    //strcpy( process_list[0].name, "Idle Task" );
     process_list[0].pid = get_pid();
     process_list[0].state = TASK_WAITING;
 
