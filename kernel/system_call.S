@@ -18,6 +18,7 @@
 .global default_interrupt
 .extern default_interrupt_handler
 .extern main_interrupt_handler
+.extern global_tss
 
 default_interrupt:
     pushl       %ebp        /* Packup the current registers */
@@ -78,6 +79,18 @@ main_interrupt:
 	// Jump to our C code handler
 	call	main_interrupt_handler
 	
+	//Update the global_tss to reflect this stack pointer so when we
+	//come back in via interrupt we have a correct stack (i.e. update esp0, and ss0)
+	movl	$global_tss, %eax				/* Move address of global_tss into eax		*/
+	movl	%esp, %ebx						/* Move current esp0 into ebx				*/
+	addl	$76, %ebx						/* Get the address of the esp0 after we		*/
+											/* pop all registers, clean up stack,		*/
+											/* and pop off eip,cs,flags, ss, esp		*/
+	movl	%ebx, 4(%eax)					/* Move this value into esp0 of gloval_tss	*/
+	xor		%ebx, %ebx						/* Zero ebx									*/
+	movw	%ss, %ebx						/* Move our ss0 into ebx					*/
+	movl	%ebx, 8(%eax)					/* Move this value into ss0 of global_tss	*/
+		
 	// Pop our segment registers back off
 	popl	%ds
 	popl	%es
@@ -89,6 +102,7 @@ main_interrupt:
 	
 	//Restore stack because of our previous pushing of interrupt numbers
 	addl	$8, %esp 
+	
 	//Return from interrupt
 	iret
 

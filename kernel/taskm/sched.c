@@ -188,17 +188,6 @@ void schedule()
     if (new_thread->is_new)
     {
         thread_switch_to_new_thread(new_thread);
-        //We are now on a new thread
-        current_thread->handled_new = FALSE;
-        //Set up the global tss to use the new processes kernel stack
-        global_tss.ss0 = new_thread->task_state.ss0;
-        global_tss.esp0 = new_thread->task_state.esp0;
-
-        current_thread->parent_process->state = TASK_READY;
-        //Set the current process to this new process
-        current_thread = new_thread;
-        current_thread->parent_process->state = TASK_RUNNING;
-        current_process = current_thread->parent_process;
     }
     else
         thread_switch(new_thread);
@@ -206,7 +195,6 @@ void schedule()
 
 void thread_switch_to_new_thread(struct thread* new_thread)
 {
-
     asm volatile ("pushal\n\t"                      /* Push all general purpose registers onto stack  */
                   "movl    %0, %%eax\n\t"           /* Put the address of old_task_state in eax                         */
                   "movl    %%esp, 4(%%eax)\n\t"     /* move the current stack pointer into esp0 in task_state structure */
@@ -232,9 +220,9 @@ void thread_switch_to_new_thread(struct thread* new_thread)
                   "movl   %1, %%ss\n\t"
                   ::"m"(current_thread->task_state.esp0), "m"(current_thread->task_state.ss0));
 
-    //Signal the end of interrupt
+    /* Signal the end of interrupt */
     outb(0x20, 0x20);
-    //Enable interrupts
+    /* Enable interrupts */
     enable();
 
     jump_to_ring3_task(current_thread->task_state.ss,
@@ -245,21 +233,27 @@ void thread_switch_to_new_thread(struct thread* new_thread)
 
 void thread_switch(struct thread* new_thread)
 {
-    //Don't bother switching if there is only one task
+    /** Local copy of current thread */
+    struct thread* current = current_thread;
+    /** Cache the handled new */
+    char handled_new = new_thread->handled_new;
+    new_thread->handled_new = FALSE;
+
+    /* Don't bother switching if switching to itself */
     if (new_thread == current_thread)
         return;
 
-    context_switch( &current_thread->task_state, &new_thread->task_state, new_thread->handled_new );
-    
-    //Set up the global tss to use the new processes kernel stack
-    global_tss.ss0 = new_thread->task_state.ss0;
-    global_tss.esp0 = new_thread->task_state.esp0;
-
+    /* Set the current thread to be ready for execution again */
     current_thread->parent_process->state = TASK_READY;
-    //Set the current process to this new process
+    /* Set the current process to this new process */
     current_thread = new_thread;
+    /* Set the current process to state running */
     current_thread->parent_process->state = TASK_RUNNING;
+    /* Update our global current_process to this process */
     current_process = current_thread->parent_process;
+
+    context_switch( &current->task_state, &new_thread->task_state, handled_new );
+     
 }
 
 struct process* get_idle_task()
