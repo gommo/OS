@@ -109,6 +109,23 @@ int semaphore_wait(sema_handle sem_handle)
     if (sema->value < 0)
     {
         //Need to block the current thread on this semaphore
+        thread_t* block_list = sema->blocked_list;
+        
+        if (block_list == NULL) 
+        {
+            //No threads currently blocked on this semaphore
+        }
+        else
+        {
+            while (block_list->snext != NULL) {
+                block_list = block_list->snext;
+            }
+
+            //Ok block_list now points to last thread blocked on this semapore, need to add
+            //this current thread to this list
+
+        }
+        
         
         //Then call schedule
         schedule();

@@ -40,6 +40,9 @@ int system_call( struct handler_stack_frame* frame )
     case SYS_SEMA_SIGNAL:
         *system_call_result = semaphore_signal( (int)system_call_params[0] );
         break;
+    case SYS_THREAD_EXIT:
+        *system_call_result = sys_thread_exit();
+        break;
     default:
         *system_call_result = FAILURE;
         break;

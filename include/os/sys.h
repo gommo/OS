@@ -21,7 +21,8 @@ enum
 {
     SYS_SEMA_CREATE,
     SYS_SEMA_WAIT,
-    SYS_SEMA_SIGNAL
+    SYS_SEMA_SIGNAL,
+    SYS_THREAD_EXIT
 } SYSTEM_CALL_ENUM;
 /**
  * This MACRO was taken from tabOS. It basically is a good way of issuing

@@ -110,6 +110,9 @@ typedef struct thread
     uint                    priority;
     /** Semaphore pointer this thread is in */
     struct semaphore*       sema;
+    /** List of other threads blocked on the semaphore with this thread */
+    struct thread*          snext;
+    struct thread*          sprev;
 
 } thread_t;
 
@@ -135,5 +138,7 @@ void schedule();
 process_t* get_current_task();
 /** Returns current thread ptr */
 thread_t* get_current_thread();
+/** This function is called when a thread ends */
+void sys_thread_exit();
 
 #endif

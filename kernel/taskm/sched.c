@@ -33,6 +33,15 @@ static thread_t* ready_head = NULL;
 /** Current thread running */
 static thread_t* current_thread = NULL;
 
+/** Head of the realtime priority thread queue */
+static thread_t realtime_priority_head = NULL;
+/** Head of the high priority thread queue */
+static thread_t high_priority_head = NULL;
+/** Head of the Normal priority thread queue */
+static thread_t normal_priority_head = NULL;
+/** Head of the Low priority thread queue */
+static thread_t low_priority_head = NULL;
+
 /** Current PID to give out */
 static ulong    current_pid = 0;
 /** Current TID to give out */
@@ -118,6 +127,8 @@ void create_process(char* task_name, void* function, void* params, uint priority
     thread->prev = NULL;
     thread->pnext = NULL;
     thread->pprev = NULL;
+    thread->snext = NULL;
+    thread->sprev = NULL;
     thread->thread_id = get_tid();
     thread->priority = priority;
     thread->task_state.eip = (ulong)(function);
@@ -256,6 +267,11 @@ void thread_switch(thread_t* new_thread)
 
     context_switch( (ulong*)&current->task_state, (ulong*)&new_thread->task_state, handled_new );
      
+}
+
+void sys_thread_exit()
+{
+
 }
 
 process_t* get_idle_task()
