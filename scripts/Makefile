@@ -16,7 +16,7 @@ SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c kernel/timer.c \
        kernel/mm/mm.c \
 	lib/stdio/vsprintf.c \
 	lib/string/isdigit.c lib/string/strlen.c lib/string/strnlen.c \
-   lib/string/memset.c lib/string/strcpy.c \
+   lib/string/memset.c lib/string/strcpy.c lib/string/memcpy.c \
    app/user.c \
    os/os.c
 OBJS = $(SRCS:.c=.o)

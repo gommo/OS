@@ -7,6 +7,18 @@
 * This file contains code responsible for the scheduling of the processes
 * and threads in the operating system
 *
+* The main function in this file is the schedule() function
+* Currently this kernel supports four different priority levels
+* REALTIME: Has no limit in the time slicing it can be given
+* HIGH: Has a high limit to the amount of times it can be scheduled before
+*       giving way to a lower priority task
+* NORMAL: Has a lower limit to the amount of times it can be scheduled before
+*       giving way to a lower prioirty task
+* LOW: Lowest form, at the head of this list if the nulltask that runs
+*      when other tasks are not ready
+*
+*
+*
 * Compiler: gcc
 *
 * Author: Colin Goudie
@@ -26,7 +38,8 @@ extern struct tss global_tss;
 /** Extern declaration of the user level thread_exit call
     that is used when a thread finishes execution */
 extern int thread_exit(); 
-
+/** HACK, kernel_stack here is used as a junk stack */
+extern long    kernel_stack [ PAGE_SIZE >> 2 ];
 /** Head of our Process list*/
 static process_t* process_head = NULL;
 /** Current running process */
@@ -55,6 +68,11 @@ static thread_t* low_priority_head = NULL;
 static thread_t* last_ex_low_thread = NULL;
 /** Head of the sleep queue */
 static thread_t* sleep_head = NULL;
+
+/** High executing count. */
+static uint high_count = 0;
+/** Normal executing count */
+static uint normal_count = 0;
 
 /** Current PID to give out */
 static ulong    current_pid = 0;
@@ -259,8 +277,14 @@ void* create_process(char* task_name, void* function, void* params, uint priorit
  */
 void schedule()
 {
+    //Holds the new selected thread
     thread_t* new_thread;
-
+    //If we are about to run the null tasks we check again to 
+    //ensure that we could run a higher tasks (This is because, higher tasks
+    //can give way to lower tasks but we don't want a higher tasks giving
+    //way to the null task
+    char recheck = FALSE;
+loop:
     new_thread = NULL;
 
     //Search for next task from highest priority to lowest
@@ -287,66 +311,91 @@ void schedule()
             new_thread = last_ex_realtime_thread;
         }
     }
-    
+
     if (new_thread == NULL)
     {
-        //Check for high priority tasks
-        if (last_ex_high_thread == NULL)
+        //Only check for a high prioirty tasks if we have exhausted our limit
+        if (high_count < HIGH_PRIORITY_MAX_COUNT)
         {
-            //If there was no last executing high threads
-            if (high_priority_head != NULL)
+            //Check for high priority tasks
+            if (last_ex_high_thread == NULL)
             {
-                last_ex_high_thread = high_priority_head;
-                new_thread = last_ex_high_thread;
-            }
-        }
-        else
-        {
-            if (last_ex_high_thread->next != NULL)
-            {
-                last_ex_high_thread = last_ex_high_thread->next;
-                new_thread = last_ex_high_thread;
+                //If there was no last executing high threads
+                if (high_priority_head != NULL)
+                {
+                    last_ex_high_thread = high_priority_head;
+                    new_thread = last_ex_high_thread;
+                }
             }
             else
             {
-                //Set it to the head
-                last_ex_high_thread = high_priority_head;
-                new_thread = last_ex_high_thread;
+                if (last_ex_high_thread->next != NULL)
+                {
+                    last_ex_high_thread = last_ex_high_thread->next;
+                    new_thread = last_ex_high_thread;
+                }
+                else
+                {
+                    //Set it to the head
+                    last_ex_high_thread = high_priority_head;
+                    new_thread = last_ex_high_thread;
+                }
             }
         }
+    }
 
+    if (new_thread != NULL)
+    {
+        //We have picked a high priority thread
+        high_count++;
+        goto ready_to_thread_switch;
     }
 
     if (new_thread == NULL)
     {
-        //Check for normal priority tasks
-        if (last_ex_normal_thread == NULL)
+        //Only check for normal tasks if we haven't exhausted our limit
+        if (normal_count < NORMAL_PRIORITY_MAX_COUNT)
         {
-            //If there was no last executing high threads
-            if (normal_priority_head != NULL)
+            //Check for normal priority tasks
+            if (last_ex_normal_thread == NULL)
             {
-                last_ex_normal_thread = normal_priority_head;
-                new_thread = last_ex_normal_thread;
-            }
-        }
-        else
-        {
-            if (last_ex_normal_thread->next != NULL)
-            {
-                last_ex_normal_thread = last_ex_normal_thread->next;
-                new_thread = last_ex_normal_thread;
+                //If there was no last executing high threads
+                if (normal_priority_head != NULL)
+                {
+                    last_ex_normal_thread = normal_priority_head;
+                    new_thread = last_ex_normal_thread;
+                }
             }
             else
             {
-                //Set it to the head
-                last_ex_normal_thread = normal_priority_head;
-                new_thread = last_ex_normal_thread;
-            }
-        }   
+                if (last_ex_normal_thread->next != NULL)
+                {
+                    last_ex_normal_thread = last_ex_normal_thread->next;
+                    new_thread = last_ex_normal_thread;
+                }
+                else
+                {
+                    //Set it to the head
+                    last_ex_normal_thread = normal_priority_head;
+                    new_thread = last_ex_normal_thread;
+                }
+            }   
+        }
+    }
+
+    if (new_thread != NULL)
+    {
+        //We have picked a normal priority thread
+        normal_count++;
+        goto ready_to_thread_switch;
     }
 
     if (new_thread == NULL)
     {
+        //reset the higher priority counts
+        normal_count = 0;
+        high_count = 0;
+
         //Check for low priority tasks
         if (last_ex_low_thread == NULL)
         {
@@ -372,6 +421,16 @@ void schedule()
             }
         }
     }
+
+    if (!recheck && new_thread == low_priority_head)
+    {
+        //We are about to select the null task
+        //check for higher tasks
+        recheck = TRUE;
+        goto loop;
+    }
+
+ready_to_thread_switch:
 
     if (new_thread->is_new)
     {
@@ -617,6 +676,19 @@ int sys_thread_exit()
 
     //OK, so now current_thread is not in any running queues
     
+    //Lets switch the current thread to be the null task, 
+    //set our current stack to a junk stack, (like the old original kernel stack)
+    //and then schedule
+    asm volatile ("lss         kernel_stack_desc, %esp");
+
+    //THIS IS A HACK
+    //We will copy our current kernel stack from the dying task to our jumk task
+    memcpy(kernel_stack, current_thread->kernel_stack, (PAGE_SIZE >> 2));
+
+    //Clear up memory
+    k_free(current_thread->parent_process);
+    k_free(current_thread);
+
     //Probably set current_thread to the null thread then perform a task switch
     return SUCCESS;
 }

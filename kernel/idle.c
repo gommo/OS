@@ -26,14 +26,14 @@ void idle_task(void* ptr)
 
     current = get_current_task();
 
-    klprintf(9, "SS:0x%02x ESP:0x%08x SS0:0x%02x ESP0:0x%08x", current->thread_list->task_state.ss,
+    /*klprintf(9, "SS:0x%02x ESP:0x%08x SS0:0x%02x ESP0:0x%08x", current->thread_list->task_state.ss,
                                                                 current->thread_list->task_state.esp,
                                                                 current->thread_list->task_state.ss0,
                                                                 current->thread_list->task_state.esp0);
-    
+    */
     for (;;)
     {
-        klprintf(8, "In %s: %d", get_current_task_name(), my_loops++);
+        klprintf(9, "In %s: %d", get_current_task_name(), my_loops++);
     }
         
 }

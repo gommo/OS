@@ -251,6 +251,9 @@
 					RelativePath=".\lib\string\isdigit.c">
 				</File>
 				<File
+					RelativePath=".\lib\string\memcpy.c">
+				</File>
+				<File
 					RelativePath=".\lib\string\memset.c">
 				</File>
 				<File

@@ -38,6 +38,9 @@
 #define         PRIORITY_NORMAL                 2
 #define         PRIORITY_LOW                    3
 
+#define         HIGH_PRIORITY_MAX_COUNT         15
+#define         NORMAL_PRIORITY_MAX_COUNT       3
+
 /** 
  * This macro simplies the jump from ring 0 code
  * to ring 3 code

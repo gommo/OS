@@ -8,15 +8,31 @@
 This operating system should be compiled on a GNU Operating System using
 GCC, and the Gnu Assembler, using gmake.
 
-Notes on this Milestone Build
------------------------------
-This build simply displays three threads. They simply count a variable up 
-outputting the current value to the screen. The scheduler simply swaps 
-between these two threads.
+Notes on the example
+--------------------
+user.c contains the code that can be used to varify certain features of this 
+kernel.
 
-Currently this kernel isn't really Real-time. I need to have a good look
-about what things to add and not get carried away designing a more generic
-operating system.
+We have 2 Normal priority threads (test_function and test_function2) started
+from kernel.c. These ensure both semaphores and our timer is working by attempting
+to enter the critical section defined between sema_wait(sema) and sema_signal(sema).
+Both these threads use the same semaphore so effectly they block each other each time.
+When entering the critical sections they sleep for a few hundred milliseconds.
+
+Before test_function2 actually starts it also starts a higher priority thread. This thread
+continually loops printing out its current loop count. When it passed 15,000 iterations the
+thread dies.
+
+The important thing here to note is that the scheduler avoids starvation of the lower
+priority threads by not allowing the high priority task to hog the CPU all the time.
+
+test_function also starts a realtime thread that executions for 500 iterations before dying.
+This demonstrates the dynamic memory (i.e. thread creation and destruction) and also that
+the realtime thread takes preference over all threads with no limit to the amount of 
+time slicing it can receive. 
+
+This kernel also supports dynamic memory via the k_malloc and k_free commands. Threads 
+can also die by 
 
 Building the Kernel
 -------------------

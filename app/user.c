@@ -17,48 +17,64 @@
 
 extern sema_handle sema;
 
+void spawned_task_function(void* ptr);
+void realtime_task(void* ptr);
+
 void test_function(void* ptr)
 {
-    struct process* current;
     uint my_loops = 0;
     ptr = ptr;
 
-    current = get_current_task();
-
-    klprintf(12, "SS:0x%02x ESP:0x%08x SS0:0x%02x ESP0:0x%08x", current->thread_list->task_state.ss,
-        current->thread_list->task_state.esp,
-        current->thread_list->task_state.ss0,
-        current->thread_list->task_state.esp0);
-
-    
     for (;;)
     {
         sema_wait(sema);
-        klprintf(11, "In %s: %d", get_current_task_name(), my_loops++);
-        msleep(150);
+        klprintf(10, "In %s: %d", get_current_task_name(), my_loops++);
+        msleep(500);
+        create_process("Realtime Task", &realtime_task, NULL, PRIORITY_REALTIME);
         sema_signal(sema);
     }
 }
 
 void test_function2(void* ptr)
 {
-    struct process* current;
     uint my_loops = 0;
     ptr = ptr;
 
-    current = get_current_task();
-
-    klprintf(14, "SS:0x%02x ESP:0x%08x SS0:0x%02x ESP0:0x%08x", current->thread_list->task_state.ss,
-        current->thread_list->task_state.esp,
-        current->thread_list->task_state.ss0,
-        current->thread_list->task_state.esp0);
-    
-    
+    create_process("Spawned Task", &spawned_task_function, NULL, PRIORITY_HIGH);
+   
     for (;;)
     {
         sema_wait(sema);
-        klprintf(13, "In %s: %d", get_current_task_name(), my_loops++);
-        msleep(230);
+        klprintf(11, "In %s: %d", get_current_task_name(), my_loops++);
+        msleep(300);
         sema_signal(sema);
     }
 }
+
+void spawned_task_function(void* ptr)
+{
+    uint my_loops = 0;
+    ptr = ptr;
+
+    for (;;)
+    {
+        klprintf(12, "In %s: %d", get_current_task_name(), my_loops++);
+        //msleep(100);
+        if (my_loops > 15000)
+            break;
+    }
+}
+
+void realtime_task(void* ptr)
+{
+    uint my_loops = 0;
+    ptr = ptr;
+
+    for (;;)
+    {
+        klprintf(13, "in %s: %d", get_current_task_name(), my_loops++);
+        if (my_loops > 500)
+            break;
+    }
+}
+
