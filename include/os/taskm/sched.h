@@ -32,6 +32,11 @@
 
 #define         PERMENANT_PROCESS               -1
 
+/* Defines for priorities */
+#define         PRIORITY_HIGH                   1
+#define         PRIORITY_NORMAL                 2
+#define         PRIORITY_LOW                    3
+
 /** 
  * This macro simplies the jump from ring 0 code
  * to ring 3 code
@@ -99,13 +104,14 @@ struct thread
     long                    kernel_stack[PAGE_SIZE >> 2];
     /** Flag to indicate if this thread is new */
     uchar                   is_new;
-    
+    /** Priority of thread */
+    uint                    priority;
 };
 
 /**
 * Creates a process to run on this operating system
 */
-void create_proc(char* task_name, void* function, void* params);
+void create_proc(char* task_name, void* function, void* params, uint priority);
 /**
  * Initialises the scheduler and idle process
  */

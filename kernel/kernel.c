@@ -82,7 +82,7 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
     enable();
 
     //Add new new process
-    create_proc("Test Proc", &test_function, NULL);
+    create_proc("Test Proc", &test_function, NULL, PRIORITY_NORMAL);
 
     klprintf(16, "Idle Task proc lives @ 0x%08x", get_idle_task());
     klprintf(17, "Test proc lives @ 0x%08x", get_idle_task()->next);

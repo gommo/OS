@@ -90,7 +90,7 @@ void init_sched()
         1, 1 );
 
     //Create our idle task
-    create_proc("Idle Task", &idle_task, NULL);
+    create_proc("Idle Task", &idle_task, NULL, PRIORITY_LOW);
     //Set the is_new flag to false as we manually start this
     get_idle_task()->thread_list->is_new = FALSE;
 
@@ -98,7 +98,7 @@ void init_sched()
     global_tss.esp0 = get_idle_task()->thread_list->task_state.esp0;
 }
 
-void create_proc(char* task_name, void* function, void* params)
+void create_proc(char* task_name, void* function, void* params, uint priority)
 {
     struct process* proc;
     struct thread* thread;
@@ -119,6 +119,7 @@ void create_proc(char* task_name, void* function, void* params)
     thread->pnext = NULL;
     thread->pprev = NULL;
     thread->thread_id = get_tid();
+    thread->priority = priority;
     thread->task_state.eip = (ulong)(function);
     thread->task_state.cs = USER_CODE;
     thread->task_state.ss = USER_DATA;
