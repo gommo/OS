@@ -54,7 +54,7 @@ void set_frequency(uint frequency)
 
 void timer_interrupt_handler()
 {
-    if (inc_system_ticks() > last_do_tick + 10)
+    if (inc_system_ticks() > last_do_tick)
     {
         last_do_tick = get_system_ticks();
         schedule();
