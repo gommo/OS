@@ -56,6 +56,7 @@ extern desc_table idt;
  * The following externs are functions defined in system_call.S
  */
 extern void irq0(void);
+extern void system_call_entry(void);
 
 /**
  * This function handles most interrupts by finding out the interrupt #

@@ -25,7 +25,7 @@ enum
 } SYSTEM_CALL_ENUM;
 /**
  * This MACRO was taken from tabOS. It basically is a good way of issuing
- * system calls, allowing you to pass paramaters and get return values.
+ * system calls, allowing you to pass parameters and get return values.
  * Basically a user function, defined outside the kernel is a wrapper for
  * this macro. This macro then ends up expanding to
  *  Placing the system call number in eax
@@ -33,7 +33,7 @@ enum
  *  Expecting the return value in ecx
  *  Issues int 0x80 which enters the kernel
  *
- *  The kernel then looks @ the system call number and calls the appropriote
+ *  The kernel then looks @ the system call number and calls the appropriate
  *  kernel function to handle this request
  */
 #define SYSTEM_CALL_FUNC(number, params, ret_value) \

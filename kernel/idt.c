@@ -57,6 +57,13 @@ BOOL init_idt()
     /* Timer interrupt */
     set_interrupt_handler( INTERRUPT_GATE, 0x20, &irq0, KERNEL_CODE, KERNEL_LEVEL );
     
+    /** Set system call interrupt */
+    set_interrupt_handler( INTERRUPT_GATE, 0x80, &system_call_entry, KERNEL_CODE, USER_LEVEL );
+
+    /** Tests */
+    //set_interrupt_handler( INTERRUPT_GATE, 127, 0xBADBAD, KERNEL_CODE, KERNEL_LEVEL);
+    //set_interrupt_handler( INTERRUPT_GATE, 129, 0xFFBADBAD, KERNEL_CODE, USER_LEVEL);
+
     return TRUE;
 }
 
@@ -66,8 +73,6 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
                                     ushort    segment_selector,
                                     ushort    privilege_level)
 {
-    //static int count = 0;
-    //klprintf(10, "set_interrupt_handler called %d times", ++count);
     switch(type)
     {
     case TASK_GATE:

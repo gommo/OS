@@ -24,6 +24,8 @@ int semaphore_create(sema_handle* sem_handle, int value)
 {
     char interrupts_enabled;
 
+    klprintf(5, "Entered semaphore_create");
+
     //Need to create a new semaphore
     semaphore_t* sema = (semaphore_t*)k_malloc(sizeof(semaphore_t));
 
