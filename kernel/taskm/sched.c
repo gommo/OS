@@ -11,7 +11,8 @@
 *
 * Author: Colin Goudie
 **************************************************************************/
-#include <os/sched.h>
+#include <os/taskm/sched.h>
+#include <os/taskm/taskm.h>
 
 /** Current PID to give out */
 static ulong    current_pid = 0;

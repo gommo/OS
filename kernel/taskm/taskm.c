@@ -11,8 +11,8 @@
 *
 * Author: Colin Goudie
 **************************************************************************/
-#include <os/taskm.h>
-#include <os/sched.h>
+#include <os/taskm/taskm.h>
+#include <os/taskm/sched.h>
 #include <os/kernel.h>
 
 /** TSS Descriptor created in init.S */

@@ -128,9 +128,6 @@
 					RelativePath=".\include\os\kernel.h">
 				</File>
 				<File
-					RelativePath=".\include\os\mm.h">
-				</File>
-				<File
 					RelativePath=".\include\os\multiboot.h">
 				</File>
 				<File
@@ -140,17 +137,28 @@
 					RelativePath=".\include\os\platform.h">
 				</File>
 				<File
-					RelativePath=".\include\os\sched.h">
-				</File>
-				<File
-					RelativePath=".\include\os\taskm.h">
-				</File>
-				<File
 					RelativePath=".\include\os\timer.h">
 				</File>
 				<File
 					RelativePath=".\include\os\tty.h">
 				</File>
+				<Filter
+					Name="mm"
+					Filter="">
+					<File
+						RelativePath=".\include\os\mm\mm.h">
+					</File>
+				</Filter>
+				<Filter
+					Name="taskm"
+					Filter="">
+					<File
+						RelativePath=".\include\os\taskm\sched.h">
+					</File>
+					<File
+						RelativePath=".\include\os\taskm\taskm.h">
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="asm"
@@ -186,19 +194,10 @@
 				RelativePath=".\kernel\kernel.c">
 			</File>
 			<File
-				RelativePath=".\kernel\mm.c">
-			</File>
-			<File
 				RelativePath=".\kernel\pic.c">
 			</File>
 			<File
-				RelativePath=".\kernel\sched.c">
-			</File>
-			<File
 				RelativePath=".\kernel\system_call.S">
-			</File>
-			<File
-				RelativePath=".\kernel\taskm.c">
 			</File>
 			<File
 				RelativePath=".\kernel\timer.c">
@@ -206,6 +205,23 @@
 			<File
 				RelativePath=".\kernel\tty.c">
 			</File>
+			<Filter
+				Name="mm"
+				Filter="">
+				<File
+					RelativePath=".\kernel\mm\mm.c">
+				</File>
+			</Filter>
+			<Filter
+				Name="taskm"
+				Filter="">
+				<File
+					RelativePath=".\kernel\taskm\sched.c">
+				</File>
+				<File
+					RelativePath=".\kernel\taskm\taskm.c">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="lib"
