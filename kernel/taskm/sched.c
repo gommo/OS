@@ -145,8 +145,8 @@ void create_process(char* task_name, void* function, void* params, uint priority
     thread->task_state.eip = (ulong)(function);
     thread->task_state.cs = USER_CODE;
     thread->task_state.ss = USER_DATA;
-    thread->user_stack[PAGE_SIZE >> 2] = &thread_exit;
-    thread->task_state.esp = (ulong)&thread->user_stack[(PAGE_SIZE >> 2) - 1];
+    //thread->user_stack[PAGE_SIZE >> 2] = &thread_exit;
+    thread->task_state.esp = (ulong)&thread->user_stack[(PAGE_SIZE >> 2)];
     thread->task_state.ds = USER_DATA;
     thread->task_state.es = USER_DATA;
     thread->task_state.fs = USER_DATA;
@@ -170,26 +170,26 @@ void create_process(char* task_name, void* function, void* params, uint priority
     else
     {
         thread_t* th_ptr;
-        thread_t* th_list;
+        thread_t** th_list;
         //Get a pointer to the head of the correct thread list
         switch(priority)
         {
         case PRIORITY_LOW:
-            th_list = low_priority_head;
+            th_list = &low_priority_head;
             break;
         case PRIORITY_NORMAL:
-            th_list = normal_priority_head;
+            th_list = &normal_priority_head;
             break;
         case PRIORITY_HIGH:
-            th_list = high_priority_head;
+            th_list = &high_priority_head;
             break;
         case PRIORITY_REALTIME:
-            th_list = realtime_priority_head;
+            th_list = &realtime_priority_head;
             break;
         default:
             //MAJOR KERNEL ERROR
             //Add to low
-            th_list = low_priority_head;
+            th_list = &low_priority_head;
         }
                 
         process_t* ptr = process_head;
@@ -202,21 +202,28 @@ void create_process(char* task_name, void* function, void* params, uint priority
 
         //Add the processes threads to the ready queue
         //Find the tail of the ready queue
-        while (th_list->next != NULL)
-            th_list = th_list->next;
+        if ((*th_list) != NULL)
+        {
+            while ((*th_list)->next != NULL)
+                (*th_list) = (*th_list)->next;
+        }
 
         th_ptr = proc->thread_list;
         while (th_ptr != NULL)
         {
-            //Set the end of thread list to our new thread
-            th_list->next = th_ptr;
-            //Set out new threads prev to the end of the list
-            th_ptr->prev = th_list;
+            if ((*th_list) != NULL)
+            {
+                //Set the end of thread list to our new thread
+                (*th_list)->next = th_ptr;
+                //Set out new threads prev to the end of the list
+                th_ptr->prev = (*th_list);
+            }
             //Set the end of the list to our new thread
-            th_list = th_ptr;
+            (*th_list) = th_ptr;
             //Get the next thread belonging to this new process
             th_ptr = th_ptr->pnext;
         }
+        
     }
 }
 
