@@ -15,9 +15,13 @@
 #define __TASKM_H__
 
 #include <os/config.h>
+#include <os/platform.h>
 
-/** Number of Tasks supported by the Operating System */
-#define         NUMBER_OF_TASKS                 128
+/** Number of Processes supported by the Operating System */
+#define         MAX_PROCESSES                   128
+
+/** Max size of a process name */
+#define         MAX_PROCESS_NAME                256
 
 /** Task state defines */
 #define         TASK_RUNNING                    3
@@ -30,13 +34,36 @@
  * in the OS. It is used to store all the important information about 
  * a task
  */
-struct task_struct
+struct process
 {
+    /** Name of the Process */
+    char    name[MAX_PROCESS_NAME];
     /** State of the Task. 0 = zombie, 1 = stopped, 2 = waiting, 3 = running */
     uchar           state;
-    /** Pointer to this tasks tss */
-    struct tss*     task_tss;
+    /** Pointer to the list of threads that make up this process */
+    struct thread*      thread_list;
+    /** The TTY number that this process can input/output to (-1 if no tty)*/
+    int     tty_number;
 };
+
+/** 
+ * Thread structure
+ *
+ * @TODO Will add Semaphore pointers etc when we get to it
+ */
+struct thread
+{
+    /* Thread ID */
+    ulong                   thread_id;
+    /* The links to create a thread list */
+    struct thread*          next;
+    struct thread*          prev;
+
+    /** Threads Stack Frame, this is where all the data a thread needs is held */
+    struct stack_frame      stck_frame;
+};
+
+
 
 /* Task-State Segment (TSS) Intel Dev Manual 3 (6.2.1)
  *

@@ -140,6 +140,9 @@
 					RelativePath=".\include\os\platform.h">
 				</File>
 				<File
+					RelativePath=".\include\os\sched.h">
+				</File>
+				<File
 					RelativePath=".\include\os\taskm.h">
 				</File>
 				<File
@@ -174,6 +177,9 @@
 			Name="kernel"
 			Filter="">
 			<File
+				RelativePath=".\kernel\idle.c">
+			</File>
+			<File
 				RelativePath=".\kernel\idt.c">
 			</File>
 			<File
@@ -184,6 +190,9 @@
 			</File>
 			<File
 				RelativePath=".\kernel\pic.c">
+			</File>
+			<File
+				RelativePath=".\kernel\sched.c">
 			</File>
 			<File
 				RelativePath=".\kernel\system_call.S">
@@ -221,6 +230,13 @@
 					RelativePath=".\lib\stdio\vsprintf.c">
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="app"
+			Filter="">
+			<File
+				RelativePath=".\app\user.c">
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\boot.S">

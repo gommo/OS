@@ -107,12 +107,50 @@ typedef enum { TASK_GATE = 0x05,
 /** Page size for this processor */
 #define     PAGE_SIZE           4096
 
+
+/**
+* A stack frame contains the necessary information
+* to return to an execution space
+*/
+struct stack_frame
+{
+    uint eip;
+    uint cs;
+    uint flags;
+    uint esp;
+    uint ss;
+};
+
+
+/**
+* This structure is used to represent the 
+* information on the stack that is passed
+* to the main interrupt handler function
+*/
+struct handler_stack_frame
+{
+    uint    ds, es, fs, gs;         //Segment Registers
+    uint    edi, esi;               //Source & destination registers
+    uint    ebp, old_esp;           //Base and Stack pointers
+    uint    ebx, edx, ecx, eax;     //General purpose registers
+
+    uint    interrupt_number;       //Interrupt Number
+
+    /* These values are first pushed onto the stack by the process
+    of the processor doing an interrupt. See Intel Dev Manual 
+    #1 S:6.4.1 (Fig 6-5)
+    */
+    uint    error_code;             //Error code
+    struct stack_frame stck_frame;  //Stack Frame
+
+};
+
 /**
  * A segment descriptor is a data structure in a GDT or LDT that provides the 
  * processor with the size and location of a segment as well as access control
  * and status information. (See Intel Dev Manual 3 S:3.4.3)
  * This struct describes a segment descriptor. It uses the gcc C extensions to enable 
- * the declaration of indiviual bits
+ * the declaration of individual bits
  */
 typedef struct 
 {

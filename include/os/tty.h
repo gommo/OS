@@ -16,6 +16,11 @@
 
 /**
  * This structure contains the information needed about a tty device
+ *
+ * A tty device is used to display information to the user and get 
+ * information from the user. I'm hoping that my OS will have say
+ * 4 tty devices on boot up and you can switch to any and issue
+ * commands
  */
 struct tty
 {

@@ -23,31 +23,6 @@ struct stack
 };
 
 /**
- * This structure is used to represent the 
- * information on the stack that is passed
- * to the main interrupt handler function
- */
-struct handler_stack_frame
-{
-    uint    ds, es, fs, gs;         //Segment Registers
-    uint    edi, esi;               //Source & destination registers
-    uint    ebp, old_esp;           //Base and Stack pointers
-    uint    ebx, edx, ecx, eax;     //General purpose registers
-    
-    uint    interrupt_number;       //Interrupt Number
-
-    /* These values are first pushed onto the stack by the process
-       of the processor doing an interrupt. See Intel Dev Manual 
-       #1 S:6.4.1 (Fig 6-5)
-     */
-    uint    error_code;             //Error code
-    uint    eip, cs;                //Calling codes cs:ip
-    uint    flags;                  //Eflags register
-    uint    esp, ss;                //Calling codes ss:esp
-
-};
-
-/**
  * Disables interrupts
  */
 void disable();
