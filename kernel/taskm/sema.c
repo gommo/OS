@@ -23,8 +23,6 @@ static semaphore_t* sema_tail = NULL;
 int semaphore_create(sema_handle* sem_handle, int value)
 {
     char interrupts_enabled;
-    interrupts_enabled = return_interrupt_status();
-    disable();
 
     //Need to create a new semaphore
     semaphore_t* sema = (semaphore_t*)k_malloc(sizeof(semaphore_t));
@@ -34,6 +32,9 @@ int semaphore_create(sema_handle* sem_handle, int value)
         //Could not create a semaphore
         return FAILURE;
     }
+
+    interrupts_enabled = return_interrupt_status();
+    disable();
 
     if (sema_tail == NULL) //First semaphore entry
     {

@@ -61,7 +61,7 @@ struct semaphore;
 /**
 * Task structure. This structure is probably the most important structure
 * in the OS. It is used to store all the important information about 
-* a task
+* a process
 */
 typedef struct process
 {
