@@ -194,6 +194,7 @@ void thread_switch_to_new_thread(struct thread* new_thread)
 {
     asm volatile ("pushal\n\t"                      /* Push all general purpose registers onto stack                    */
                   "movl    %0, %%eax\n\t"           /* Put the address of old_task_state in eax                         */
+                  "addl    $12, %%esp\n\t"           /* Clean up this stack */
                   "movl    %%esp, 4(%%eax)\n\t"     /* move the current stack pointer into esp0 in task_state structure */
                   "movw    %%ss, 8(%%eax)\n\t"      /* move the current ss into ss0 in old_task_state structure         */
                   ::"m"(&current_thread->task_state));
