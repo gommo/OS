@@ -76,15 +76,20 @@ int semaphore_create(sema_handle* sem_handle, int value)
 int semaphore_wait(sema_handle sem_handle)
 {
     char interrupts_enabled;
+    thread_t* current;
     interrupts_enabled = return_interrupt_status();
     disable();
 
+    current = get_current_thread();
     //First find this semaphore
     int i=1;
-    semaphore_t* sema = NULL;
+    semaphore_t* sema = sema_head;
 
     while (i < (int)sem_handle)
     {
+        if (sema == NULL)
+            break;
+
         if (sema->next != NULL)
         {
             sema = sema->next;
@@ -100,11 +105,11 @@ int semaphore_wait(sema_handle sem_handle)
     }
 
     //Now decrement the sema_handles value
-    sema->value --;
+    sema->value--;
 
     //As we have at least tried to enter in this critical section, ensure this thread
     //knows its the one in this critical section
-    get_current_thread()->sema = sema;
+    current->sema = sema;
 
     if (sema->value < 0)
     {
@@ -123,11 +128,16 @@ int semaphore_wait(sema_handle sem_handle)
 
             //Ok block_list now points to last thread blocked on this semapore, need to add
             //this current thread to this list
+            current->sprev = block_list;
+            block_list->snext = current;
+            current->snext = NULL;
 
+            //remove current from its queue
+            remove_current_thread_from_running_queues();
         }
 
         //Before we shedule we need to set currrent thread to blocked for the scheduler
-        get_current_thread()->parent_process->state = TASK_STOPPED;
+        current->parent_process->state = TASK_STOPPED;
         
         //Then call schedule
         schedule();
@@ -149,9 +159,11 @@ int semaphore_wait(sema_handle sem_handle)
 int semaphore_signal(sema_handle sem_handle)
 {
     char interrupts_enabled;
+    thread_t* current;
     interrupts_enabled = return_interrupt_status();
     disable();
 
+    current = get_current_thread();
     //First find this semaphore
     int i=1;
     semaphore_t* sema = NULL;
@@ -176,7 +188,7 @@ int semaphore_signal(sema_handle sem_handle)
     //Can only signal the semaphore if this thread is actually in this
     //critical section
 
-    if (get_current_thread()->sema == sema)
+    if (current->sema == sema)
     {
         //Increment the semaphores value
         sema->value ++;
@@ -193,7 +205,12 @@ int semaphore_signal(sema_handle sem_handle)
         else
         {
             //Lets unblock sema->blocked_list head
+            //Unblock one of the threads
+            thread_t* head_of_blocked = sema->blocked_list;
+            sema->blocked_list = head_of_blocked->snext;
 
+            //Add head_of_blocked to the tail of the correct priority queue
+            add_thread_to_running_queues(head_of_blocked);
         }
     }
     else
@@ -202,7 +219,7 @@ int semaphore_signal(sema_handle sem_handle)
     }
 
     //We are leaving the critical section
-    get_current_thread()->sema = NULL;
+    current->sema = NULL;
 
     if (interrupts_enabled)
         enable();

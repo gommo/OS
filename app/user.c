@@ -15,6 +15,8 @@
 #include <os/taskm/sched.h>
 #include <os/os.h>
 
+extern sema_handle sema;
+
 void test_function(void* ptr)
 {
     struct process* current;
@@ -28,10 +30,12 @@ void test_function(void* ptr)
         current->thread_list->task_state.ss0,
         current->thread_list->task_state.esp0);
 
-
+    
     for (;;)
     {
+        //sema_wait(sema);
         klprintf(11, "In %s: %d", get_current_task_name(), my_loops++);
+        //sema_signal(sema);
     }
 }
 
@@ -39,7 +43,6 @@ void test_function2(void* ptr)
 {
     struct process* current;
     static uint my_loops = 0;
-    sema_handle sema;
     ptr = ptr;
 
     current = get_current_task();
@@ -48,11 +51,12 @@ void test_function2(void* ptr)
         current->thread_list->task_state.esp,
         current->thread_list->task_state.ss0,
         current->thread_list->task_state.esp0);
-
-    sema_create(&sema, 1);
+    
     
     for (;;)
     {
+        sema_wait(sema);    
         klprintf(13, "In %s: %d", get_current_task_name(), my_loops++);
+        sema_signal(sema);
     }
 }

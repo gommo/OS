@@ -55,6 +55,26 @@ extern desc_table idt;
 /**
  * The following externs are functions defined in system_call.S
  */
+extern void divide_error();
+extern void debug_exception();
+extern void nmi_hardware();
+extern void debug_breakpoint();
+extern void instruction_overflow();
+extern void instruction_overrange();
+extern void invalid_opcode();
+extern void no_coprocessor();
+extern void double_fault();
+extern void coprocessor_segment_overrun();
+extern void invalid_tss();
+extern void segment_not_present();
+extern void stack_fault();
+extern void general_protection_fault();
+extern void page_fault();
+extern void reserved15();
+extern void coprocessor_error();
+extern void alignment_check();
+extern void machine_check();
+
 extern void irq0(void);
 extern void system_call_entry(void);
 

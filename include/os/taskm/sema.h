@@ -28,7 +28,7 @@ typedef struct semaphore
      * Value of the semaphore (1 = available; 0 = Task got it, < 0 # of 
      * blocked tasks waiting on it 
      */
-    uint value;
+    int value;
     /** Handle for this semaphore */
     int handle;
     /* Pointers to go through list of semaphores in OS */

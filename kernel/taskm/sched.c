@@ -145,7 +145,7 @@ void create_process(char* task_name, void* function, void* params, uint priority
     thread->task_state.eip = (ulong)(function);
     thread->task_state.cs = USER_CODE;
     thread->task_state.ss = USER_DATA;
-    //thread->user_stack[PAGE_SIZE >> 2] = &thread_exit;
+    thread->user_stack[PAGE_SIZE >> 2] = (long)&thread_exit;
     thread->task_state.esp = (ulong)&thread->user_stack[(PAGE_SIZE >> 2)];
     thread->task_state.ds = USER_DATA;
     thread->task_state.es = USER_DATA;
@@ -425,9 +425,127 @@ void thread_switch(thread_t* new_thread)
      
 }
 
+void remove_current_thread_from_running_queues()
+{
+    thread_t* thrd = current_thread;
+    thread_t** last_ex = NULL;
+
+    //Need to remove this current thread 
+    if (thrd->prev == NULL) 
+    {
+        //We must be the head of our queue
+        thread_t* next = thrd->next; //Even if this is null its ok
+        switch(thrd->priority) 
+        {
+        case PRIORITY_REALTIME:
+            realtime_priority_head = next;
+            break;
+        case PRIORITY_HIGH:
+            high_priority_head = next;
+            break;
+        case PRIORITY_NORMAL:
+            normal_priority_head = next;
+            break;
+        case PRIORITY_LOW:
+            low_priority_head = next;
+            break;
+        default:
+            //Error don't need to do anything here
+            break;
+        }
+    }
+    else if (thrd->next == NULL)
+    {
+        //We must be at the end of our queue
+        thrd->prev->next = NULL;
+    }
+    else
+    {
+        //We are somewhere in the middle
+        //Remove ourselves from the queue
+        thrd->prev->next = current_thread->next;
+        thrd->next->prev = current_thread->prev;
+    }
+
+    //Set the last executing thread for this priority level
+    switch(thrd->priority) 
+    {
+        case PRIORITY_REALTIME:
+            last_ex = &realtime_priority_head;
+            break;
+        case PRIORITY_HIGH:
+            last_ex = &high_priority_head;
+            break;
+        case PRIORITY_NORMAL:
+            last_ex = &normal_priority_head;
+            break;
+        case PRIORITY_LOW:
+            last_ex = &low_priority_head;
+            break;
+        default:
+            //Error don't need to do anything here
+            break;
+    }
+
+    if (thrd->prev != NULL)
+    {
+        (*last_ex) = thrd->prev;
+    }
+    else if (thrd->next != NULL)
+    {
+        (*last_ex) = thrd->next;
+    }
+    else
+    {
+        (*last_ex) = NULL;
+    }
+
+    thrd->prev = NULL;
+    thrd->next = NULL;
+}
+
+void add_thread_to_running_queues(thread_t* thrd)
+{
+    thread_t* list = NULL;
+
+    switch(thrd->priority) 
+    {
+    case PRIORITY_REALTIME:
+        list = realtime_priority_head;
+        break;
+    case PRIORITY_HIGH:
+        list = high_priority_head;
+        break;
+    case PRIORITY_NORMAL:
+        list = normal_priority_head;
+        break;
+    case PRIORITY_LOW:
+        list = low_priority_head;
+        break;
+    default:
+        //Error don't do anything
+        break;
+    }
+
+    while(list->next != NULL)
+    {
+        list = list->next;
+    }
+
+    //list now points to the last thread in the desired running queue
+    list->next = thrd;
+    thrd->prev = list;
+    thrd->next = NULL;
+
+    //It is now attached
+}
+
 int sys_thread_exit()
 {
-    //Need to remove this current thread 
+    remove_current_thread_from_running_queues();
+
+    //OK, so now current_thread is not in any running queues
+    
 
     //Probably set current_thread to the null thread then perform a task switch
     return SUCCESS;

@@ -131,7 +131,7 @@ name: \
 	jmp		main_interrupt;
 	
 /**
- * Build the 18 intel defined exceptions
+ * Build the 19 intel defined exceptions
  */
 BUILD_INTERRUPT( divide_error, 0 );
 BUILD_INTERRUPT( debug_exception, 1);

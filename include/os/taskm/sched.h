@@ -140,5 +140,9 @@ process_t* get_current_task();
 thread_t* get_current_thread();
 /** This function is called when a thread ends */
 int sys_thread_exit();
+/** Removes thread from running queues */
+void remove_current_thread_from_running_queues();
+/** Adds the thread to the running queues */
+void add_thread_to_running_queues(thread_t* thrd);
 
 #endif

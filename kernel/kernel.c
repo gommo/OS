@@ -20,6 +20,7 @@
 #include <os/pic.h>
 #include <os/timer.h>
 #include <os/taskm/sched.h>
+#include <os/taskm/sema.h>
 #include <console.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -46,18 +47,8 @@ struct tss global_tss;
  */
 extern desc_table gdt;
 
-typedef struct test_structure_1
-{
-    uint one;
-    uint two;
-} test_struc1;
-
-typedef struct test_structure_2
-{
-    uint one;
-    uint two;
-    uint three;
-} test_struc2;
+/** Test global semaphore */
+sema_handle sema;
 
 /* This is our first C function that is called. It initialises our kernel */
 int k_main(multiboot_info_t* info) // like main in a normal C program
@@ -93,8 +84,9 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
     enable();
 
     //Add new new process for test
-    create_process("Test Proc", &test_function, NULL, PRIORITY_LOW);
-    create_process("Another Proc", &test_function2, NULL, PRIORITY_LOW);
+    sema_create(&sema, 1);
+    create_process("Test Proc", &test_function, NULL, PRIORITY_NORMAL);
+    create_process("Another Proc", &test_function2, NULL, PRIORITY_NORMAL);
 
     klprintf(16, "Idle Task proc lives @ 0x%08x", get_idle_task());
     klprintf(17, "Test proc lives @ 0x%08x", get_idle_task()->next);
