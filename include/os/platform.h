@@ -70,8 +70,6 @@ typedef struct descriptor_table
     struct descriptor descriptor;
 } desc_table[256];
 
-extern desc_table idt, gdt;
-
 /*
  * Some inline assembly functions for setting up platforms
  * specific structures
