@@ -22,6 +22,9 @@
 extern struct tss_descriptor tss_desc;
 /** Global TSS Structure created in kernel.c */
 extern struct tss global_tss;
+/** Extern declaration of the user level thread_exit call
+    that is used when a thread finishes execution */
+extern int thread_exit(); 
 
 /** Head of our Process list*/
 static process_t* process_head = NULL;
@@ -29,18 +32,26 @@ static process_t* process_head = NULL;
 static process_t* current_process = NULL;
 
 /** Head of our Ready to Run Queue (This will always be the idle task)*/ 
-static thread_t* ready_head = NULL;
+//static thread_t* ready_head = NULL;
 /** Current thread running */
 static thread_t* current_thread = NULL;
 
 /** Head of the realtime priority thread queue */
-static thread_t realtime_priority_head = NULL;
+static thread_t* realtime_priority_head = NULL;
+/** Last executing realtime thread */
+static thread_t* last_ex_realtime_thread = NULL;
 /** Head of the high priority thread queue */
-static thread_t high_priority_head = NULL;
+static thread_t* high_priority_head = NULL;
+/** Last executiing high priority thread */
+static thread_t* last_ex_high_thread = NULL;
 /** Head of the Normal priority thread queue */
-static thread_t normal_priority_head = NULL;
+static thread_t* normal_priority_head = NULL;
+/** Last executing normal priority thread */
+static thread_t* last_ex_normal_thread = NULL;
 /** Head of the Low priority thread queue */
-static thread_t low_priority_head = NULL;
+static thread_t* low_priority_head = NULL;
+/** Last executing low priority thread */
+static thread_t* last_ex_low_thread = NULL;
 
 /** Current PID to give out */
 static ulong    current_pid = 0;
@@ -134,7 +145,8 @@ void create_process(char* task_name, void* function, void* params, uint priority
     thread->task_state.eip = (ulong)(function);
     thread->task_state.cs = USER_CODE;
     thread->task_state.ss = USER_DATA;
-    thread->task_state.esp = (ulong)&thread->user_stack[PAGE_SIZE >> 2];
+    thread->user_stack[PAGE_SIZE >> 2] = &thread_exit;
+    thread->task_state.esp = (ulong)&thread->user_stack[(PAGE_SIZE >> 2) - 1];
     thread->task_state.ds = USER_DATA;
     thread->task_state.es = USER_DATA;
     thread->task_state.fs = USER_DATA;
@@ -146,19 +158,40 @@ void create_process(char* task_name, void* function, void* params, uint priority
     thread->sema = NULL;
 
     //Add the task to our process list
-    if (ready_head == NULL)
+    if (low_priority_head == NULL && priority == PRIORITY_LOW)
     {
-        //This is the first task 
-        ready_head = thread;
+        //This is the first task (Idle)
+        low_priority_head = thread;
         current_thread = thread;
+        last_ex_low_thread = thread;
         process_head = proc;
         current_process = proc;
     }
     else
     {
         thread_t* th_ptr;
-        thread_t* th_list = ready_head;
-        
+        thread_t* th_list;
+        //Get a pointer to the head of the correct thread list
+        switch(priority)
+        {
+        case PRIORITY_LOW:
+            th_list = low_priority_head;
+            break;
+        case PRIORITY_NORMAL:
+            th_list = normal_priority_head;
+            break;
+        case PRIORITY_HIGH:
+            th_list = high_priority_head;
+            break;
+        case PRIORITY_REALTIME:
+            th_list = realtime_priority_head;
+            break;
+        default:
+            //MAJOR KERNEL ERROR
+            //Add to low
+            th_list = low_priority_head;
+        }
+                
         process_t* ptr = process_head;
         //Add the process to the process list
         while (ptr->next != NULL)
@@ -190,14 +223,119 @@ void create_process(char* task_name, void* function, void* params, uint priority
 void schedule()
 {
     thread_t* new_thread;
-    if (current_thread->next == NULL)
+
+    new_thread = NULL;
+
+    //Search for next task from highest priority to lowest
+    if (last_ex_realtime_thread == NULL)
     {
-        new_thread = ready_head;
+        //There have been no realtime threads running, has one been added?
+        if (realtime_priority_head != NULL)
+        {
+            last_ex_realtime_thread = realtime_priority_head;
+            new_thread = last_ex_realtime_thread;
+        }
     }
     else
     {
-        new_thread = current_thread->next;
+        if (last_ex_realtime_thread->next != NULL)
+        {
+            last_ex_realtime_thread = last_ex_realtime_thread->next;
+            new_thread = last_ex_realtime_thread;
+        }
+        else
+        {
+            //Set it to the head
+            last_ex_realtime_thread = realtime_priority_head;
+            new_thread = last_ex_realtime_thread;
+        }
     }
+    
+    if (new_thread == NULL)
+    {
+        //Check for high priority tasks
+        if (last_ex_high_thread == NULL)
+        {
+            //If there was no last executing high threads
+            if (high_priority_head != NULL)
+            {
+                last_ex_high_thread = high_priority_head;
+                new_thread = last_ex_high_thread;
+            }
+        }
+        else
+        {
+            if (last_ex_high_thread->next != NULL)
+            {
+                last_ex_high_thread = last_ex_high_thread->next;
+                new_thread = last_ex_high_thread;
+            }
+            else
+            {
+                //Set it to the head
+                last_ex_high_thread = high_priority_head;
+                new_thread = last_ex_high_thread;
+            }
+        }
+
+    }
+
+    if (new_thread == NULL)
+    {
+        //Check for normal priority tasks
+        if (last_ex_normal_thread == NULL)
+        {
+            //If there was no last executing high threads
+            if (normal_priority_head != NULL)
+            {
+                last_ex_normal_thread = normal_priority_head;
+                new_thread = last_ex_normal_thread;
+            }
+        }
+        else
+        {
+            if (last_ex_normal_thread->next != NULL)
+            {
+                last_ex_normal_thread = last_ex_normal_thread->next;
+                new_thread = last_ex_normal_thread;
+            }
+            else
+            {
+                //Set it to the head
+                last_ex_normal_thread = normal_priority_head;
+                new_thread = last_ex_normal_thread;
+            }
+        }   
+    }
+
+    if (new_thread == NULL)
+    {
+        //Check for low priority tasks
+        if (last_ex_low_thread == NULL)
+        {
+            //If there was no last executing high threads
+            if (low_priority_head != NULL)
+            {
+                last_ex_low_thread = low_priority_head;
+                new_thread = last_ex_low_thread;
+            }
+        }
+        else
+        {
+            if (last_ex_low_thread->next != NULL)
+            {
+                last_ex_low_thread = last_ex_low_thread->next;
+                new_thread = last_ex_low_thread;
+            }
+            else
+            {
+                //Set it to the head
+                last_ex_low_thread = low_priority_head;
+                new_thread = last_ex_low_thread;
+            }
+        }
+    }
+
     if (new_thread->is_new)
     {
         thread_switch_to_new_thread(new_thread);
@@ -269,9 +407,12 @@ void thread_switch(thread_t* new_thread)
      
 }
 
-void sys_thread_exit()
+int sys_thread_exit()
 {
+    //Need to remove this current thread 
 
+    //Probably set current_thread to the null thread then perform a task switch
+    return SUCCESS;
 }
 
 process_t* get_idle_task()

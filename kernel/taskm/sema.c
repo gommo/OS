@@ -125,7 +125,9 @@ int semaphore_wait(sema_handle sem_handle)
             //this current thread to this list
 
         }
-        
+
+        //Before we shedule we need to set currrent thread to blocked for the scheduler
+        get_current_thread()->parent_process->state = TASK_STOPPED;
         
         //Then call schedule
         schedule();
@@ -184,7 +186,15 @@ int semaphore_signal(sema_handle sem_handle)
             sema->value = 1;
 
         //We need to unblock threads on this semaphore
+        if (sema->blocked_list == NULL) 
+        {
+            //No threads blocked on this semaphore, do nothing
+        }
+        else
+        {
+            //Lets unblock sema->blocked_list head
 
+        }
     }
     else
     {

@@ -16,6 +16,7 @@
 #include <os/platform.h>
 #include <os/sys.h>
 #include <os/taskm/sema.h>
+#include <os/taskm/sched.h>
 
 int system_call( struct handler_stack_frame* frame )
 {
@@ -27,7 +28,7 @@ int system_call( struct handler_stack_frame* frame )
     system_call_params = (char**)frame->ebx;
     system_call_number = frame->eax;
 
-    klprintf(6, "system_call_params[0] =0x%08x", system_call_params[0]);
+    //klprintf(6, "system_call_params[0] =0x%08x", system_call_params[0]);
 
     switch( system_call_number )
     {

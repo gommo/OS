@@ -38,10 +38,10 @@ int sema_signal(sema_handle sem_handle)
     return result;
 }
 
-void thread_exit() 
+int thread_exit() 
 {
     int result;
     SYSTEM_CALL_FUNC( SYS_THREAD_EXIT, 0, &result);
-    return;
+    return result;
 }
 
