@@ -1,0 +1,3 @@
+mount /dev/loop0 mnt/
+cp kernel.bin mnt/boot/
+umount mnt

@@ -5,12 +5,13 @@
  * PROJECT ASSIGNMENT
  *
  * This file contains the relocatable start function that resides at
- * address 0x100000. This is the first piece of code executed and sets
- * up the initial space for the IDT, sets up a simple GDT and calls our
- * first C function k_main
+ * address 0x100000. This is the first piece of code executed.
  *
  * To enable our kernel to boot via GRUB this also contains what is called
  * a multiboot header which is a requirement by GRUB.
+ *
+ * After the initial setup of the multiboot header it calls 'init' which
+ * is in our init.S file.
  *
  * Assembler: Gas
  *
@@ -43,7 +44,7 @@
 	
 	.text
 
-    .extern k_main
+    .extern init
 	.globl	start, _start
 start:
 _start:
@@ -74,34 +75,15 @@ multiboot_header:
 #endif /* ! __ELF__ */
 
 multiboot_entry:
-	/* Initialize the stack pointer.  */
-    #call    setup_idt                           # Setup the IDT
-	movl	$(stack + STACK_SIZE), %esp
 
-	/* Reset EFLAGS.  */
-	pushl	$0
-	popf
+	/* Jump to our initialisation code */
+	call	init
 
-	//* Push the pointer to the Multiboot information structure.  */
-	//pushl	%ebx
-	///* Push the magic value.  */
-	//pushl	%eax
-
-	/* Now enter the C main function...  */
-	call	k_main
-
+    /* If we ever get back here just halt the computer */
     cli
     hlt
 
-idt_descr:
-    .word 256*8-1               # IDT has 256 entries
-    .long idt
 
-idt:
-    .fill 256, 8, 0             # Blank IDT Table with 256 entries
-
-    
-
-	/* Our stack area.  */
-	.comm	stack, STACK_SIZE
+#	/* Our stack area.  */
+#	.comm	stack, STACK_SIZE
 	

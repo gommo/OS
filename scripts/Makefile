@@ -21,17 +21,19 @@ LD = ld
 LINKFILE = link.ld
 LDFLAGS = -nostdlib -N -Ttext 100000
 
-all: boot $(OBJS)	build
+all: boot init $(OBJS)	build
 
 %.o: %.c
 				$(CC) -c $(CFLAGS) $(INCS) $*.c -o $*.o
 
 build: $(OBJS)
-				$(LD)  $(LDFLAGS) -o $(PROG) boot.o $(OBJS)
+				$(LD)  $(LDFLAGS) -o $(PROG) boot.o init.o $(OBJS)
 
 boot:	boot.S
 				$(AS) -c $(INCS) $(ASFLAGS) $? -o boot.o
 
+init:	init.S
+				$(AS) -c $(INCS) $(ASFLAGS) $? -o init.o
 clean:
 				rm -f *.o $(OBJS) $(PROG)
 
