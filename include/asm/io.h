@@ -14,12 +14,14 @@
 #ifndef __IO_H__
 #define __IO_H__
 
-void inline outb(unsigned int value, unsigned int address)
+#include <os/config.h>
+
+void inline outb(uint value, uint address)
 {
     asm("outb   %%al, %%dx"::"a"(value), "d"(address));
 }
 
-void inline outb_p(unsigned int value, unsigned int address)
+void inline outb_p(uint value, uint address)
 {
     asm("outb   %%al, %%dx\n\t"
         "jmp 1f\n\t"

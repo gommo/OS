@@ -16,21 +16,19 @@
 
 #include <os/platform.h>
 
+/* Kernel Code Segment Selector Value */
+#define     KERNEL_CODE          0x8
+#define     KERNEL_DATA          0x10
+
+
 struct stack
 {
     long* a;    /* Pointer to the stack data memory */
     short b;    /* Segment Selector                 */
 };
 
-/** This idea is taken from the linux 0.01 kernel. We set up a 
-    user stack but we also use it as the starting kernel stack too */
-long    user_stack [ PAGE_SIZE >> 2 ];
-
-/** Initialise a Stack Desscriptor pointing at the top of the user_stack
-    (PAGE>>2)  and pointing to our data segment (0x10) */
-struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], 0x10 };
-
-
+void k_clear_screen();
+unsigned int k_printf(char *message, unsigned int line);
 
 #endif
 

@@ -13,38 +13,39 @@
  **************************************************************************/
 #include <os/kernel.h>
 #include <os/platform.h>
+#include <os/idt.h>
 #include <asm/io.h>
 #include <console.h>
 
 #define HZ          100
 #define LATCH       (1193180/HZ)
 
+/** This idea is taken from the linux 0.01 kernel. We set up a 
+user stack but we also use it as the starting kernel stack too */
+long    user_stack [ PAGE_SIZE >> 2 ];
+
+/** Initialise a Stack Descriptor pointing at the top of the user_stack
+(PAGE>>2)  and pointing to our data segment (0x10) */
+struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], 0x10 };
+
 extern int timer_interrupt(void);
-void test();
-void k_clear_screen();
-unsigned int k_printf(char *message, unsigned int line);
 
 int k_main() // like main in a normal C program
 {
 	k_clear_screen();
+    k_printf("booting...", 0);
 
-    k_printf("k_main() started", 0);
+    init_idt();
 
-    set_interrupt_gate(0x20, &test);
-    
-    outb(0x36,0x43);    // Binary, Mode3,
+   
+    /*outb(0x36,0x43);    // Binary, Mode3,
     outb(LATCH & 0xff, 0x40);   //LSB
     outb(LATCH >> 8, 0x40);
-
+*/
     while(1){}
     
     return 0;    
 };
-
-void test()
-{
-    k_printf("Got Timer", 10);
-}
 
 void k_clear_screen() // clear the entire text screen
 {

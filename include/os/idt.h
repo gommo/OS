@@ -17,34 +17,30 @@
 #include <os/config.h>
 #include <os/platform.h>
 
+/* Number of interrupts we support. Changing this will require changes to
+   init.S as well */
+#define NUMBER_OF_INTERRUPTS        256
+
+/** 
+ * idt actually is defined in init.S
+ */
 extern desc_table idt;
 
 /**
- * Below are some functions used to set task gates, interrupt gates and trap
- * gates.
- *
- * For more information about what these are see the Intel Dev Manuals
- * Book 3, Section 5.11
+ * This will be the default exception handler that simply displays a message
+ * Replace this later with a good panic function that can display some
+ * useful information about the error
  */
+void default_exception_handler();
 
-ulong set_idt_task_gate( uint int_number, 
-                         ushort selector,
-                         ulong offset,
-                         uchar dpl,
-                         uchar present );
-
-ulong set_idt_interrupt_gate( uint int_number, 
-                         ushort selector,
-                         ulong offset,
-                         uchar dpl,
-                         uchar present );
-
-ulong set_idt_trap_gate( uint int_number, 
-                         ushort selector,
-                         ulong offset,
-                         uchar dpl,
-                         uchar present );
-
+/**
+* Initialises the Interrupt Descriptor Table to contain valid descriptors.
+* These are used when interrupts and exceptions occur and jump to valid
+* function handlers
+*
+* @return BOOL true if 
+*/
+BOOL init_idt();
 
 
 #endif

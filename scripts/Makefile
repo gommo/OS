@@ -10,7 +10,7 @@
 #
 ##########################################################################
 PROG = kernel.bin
-SRCS = kernel/kernel.c
+SRCS = kernel/kernel.c kernel/idt.c
 OBJS = $(SRCS:.c=.o)
 INCS = -I./include -I./
 AS = gcc

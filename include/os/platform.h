@@ -14,6 +14,8 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 
+#include <os/config.h>
+
 /* We will be running our OS in protected mode under a Basic Flat
  * Memory model. In this model the entire addressable (4GB) memory
  * space is available to both code and data segments.
@@ -33,6 +35,34 @@
  *
  * The ES, FS and GS Registers are additional data segment selectors
  */
+
+/**
+ * Privilege Level defines 
+ *
+ * These defines are used to distinguish between different privilege
+ * levels in the operating System
+ * (See Intel Dev Manual 3 (S:4.5)
+ */
+#define LEVEL0          0x0
+#define KERNEL_LEVEL    0x0
+#define LEVEL1          0x1
+#define OS_LEVEL        0x1
+#define LEVEL2          0x2
+#define LEVEL3          0x3
+#define APP_LEVEL       0x3
+
+/**
+ * IDT Descriptor and Call Gate Type enum
+ * 
+ * These enums are used to distinguish between different types of 
+ * descriptors
+ * (See Intel Dev Manual 3 (S:4.8.3 [Call Gates])
+ * (See Intel Dev Manual 3 (S:5.11  [IDT Types])
+ */
+typedef enum { TASK_GATE = 0x05,
+            INTERRUPT_GATE = 0x0E,
+            TRAP_GATE = 0x0F,
+            CALL_GATE = 0x0C } GATE_TYPE;
 
 /* Code and Data Segment Type Defines. These are structured in such
  * a way as to be able to bitwise OR them to a descriptor field after
@@ -59,46 +89,77 @@
 /** Page size for this processor */
 #define     PAGE_SIZE           4096
 
-/** This structure describes a descriptor used in the 386 processor */
-struct descriptor
+/**
+ * A segment descriptor is a data structure in a GDT or LDT that provides the 
+ * processor with the size and location of a segment as well as access control
+ * and status information. (See Intel Dev Manual 3 S:3.4.3)
+ * This struct describes a segment descriptor. It uses the gcc C extensions to enable 
+ * the declaration of indiviual bits
+ */
+typedef struct 
 {
-    unsigned long a, b;
-};
+    ushort      segment_limit_15_00;
+    ushort      base_address_15_00;
+    uchar       base_address_23_16;
+    unsigned    segment_type:4;
+    unsigned    descriptor_type:1;
+    unsigned    dpl:2;
+    unsigned    present:1;
+    unsigned    segment_limit_19_16:4;
+    unsigned    avl:1;
+    unsigned    zero:1;
+    unsigned    default_operation:1;
+    unsigned    granularity:1;
+    uchar       base_address_31_24;
+} /* PACK */ segment_descriptor;
+
+/**
+ * The Task gate contains the segment selector for a TSS for an exception
+ * and/or interrupt handler task
+ */
+typedef struct 
+{
+    ushort      reserved0;
+    ushort      tss_segment_selector;
+    uchar       reserved1;
+    unsigned    type:5;
+    unsigned    dpl:2;
+    unsigned    present:1;
+    ushort      reserved3;
+} /* PACK */ task_gate;
+
+/**
+ * Call gates and Interrupts controll transfers of program control between
+ * different privilege levels.  (Intel Dev Manual 3 S:4.8.3)
+ */
+typedef struct
+{
+    ushort      offset_15_00;
+    ushort      segment_selector;
+    unsigned    param_count:5;
+    unsigned    zeros:3;
+    unsigned    type:4;
+    unsigned    zero2:1;
+    unsigned    dpl:2;
+    unsigned    present:1;
+    ushort      offset_31_16;
+} /* PACK */ interrupt_trap_call_gate;
+
+/** 
+ * Union that is used to allow the type "descriptor" to be
+ * used for any four of the different types of descriptors
+ */
+typedef union
+{
+    segment_descriptor seg_descriptor;
+    task_gate tsk_gate;
+    interrupt_trap_call_gate int_trp_cll_gate;
+} descriptor;
 
 typedef struct descriptor_table
 {
-    struct descriptor descriptor;
+    descriptor descripts;
 } desc_table[256];
-
-/*
- * Some inline assembly functions for setting up platforms
- * specific structures
- */
-
-/**
- * This function is used to set up an interrupt gate. See Interrupt Gate on
- * page 153 of the Intel Arch Dev Manual II.
- *
- * @param unsigned int The interrupt number that this gate is
- * @param void* The pointer to the function that handles the interrupt
- */
-void inline set_interrupt_gate(unsigned int number, void* address)
-{
-    asm("movw %%dx, %%ax\n\t"  /* Moves offset 15..0 from dx to ax */
-        "movw %2, %%dx\n\t"    /* Moves 0x8E00 into dx */
-        "movl %%eax, %0\n\t"
-        "movl %%edx, %1\n\t"
-        ::  "o" ((char*)(&idt[number])), /* This parameter is the offset into the IDT */
-            "o" (4 + (char*)(&idt[number])),
-            "i" ((unsigned short)(0x8E00)), /* Hardcoded val for P,DPL, Type */
-            "d" (address), /* edx will contain the address of our handler */
-            "a" (0x00080000) /* This immediate value will go into eax and it
-                                is hardcoded so the high word is the segment
-                                selector  */
-       );
-    
-}
-
-                
+           
                 
 #endif

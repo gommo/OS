@@ -13,7 +13,6 @@
  * Author: Colin Goudie
  *
  *************************************************************************/
-
 .text
 .align 4
 
@@ -44,10 +43,12 @@ init:
     cli
     hlt
 
+.long   0
 idt_descr:
     .word   256*8-1                             # IDT has 256 entries
     .long   idt                                 # Ptr to our idt 
 
+.long   0
 idt:
     .fill   256, 8, 0                           # Black IDT Table with     
                                                 # 256 Entries         
@@ -64,12 +65,14 @@ setup_gdt:
     lgdt    gdt_descr                           # Loads our GDT
     ret
 
+.long   0
 /* GDT_Table Descriptor. This structure is in the format required by the
    lgdt assembly instruction. See the intel dev Manual 2 for more details */
 gdt_descr:
     .word   256*8-1                             # GDT has 256 entries
     .long   gdt
 
+.long   0
 /* Out Glocal Descriptor Table */
 gdt:
     .quad   0x0000000000000000  /* The first entry is blank as required */
