@@ -1,17 +1,23 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; This code was made for the tutorial:
-;; "Making a Simple C kernel with Basic printf and clearscreen Functions"
-;;
-;; This code comes with absolutly
-;; NO WARRANTY
-;; you can not hold me(KJ), nor
-;; anyone else responsible for what
-;; this code does.
-;;
-;; This code is in the public domain,
-;; you may use it however you want
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;*************************************************************************
+;*                             -=-=-= boot.S =-=-=-
+;*
+;* THIS FILE WAS CREATED AND IS FOR ELEC4710 - REALTIME SYSTEMS
+;* PROJECT ASSIGNMENT
+;*
+;* This file contains the relocatable start function that resides at 
+;* address 0x10000. This is the first piece of code executed and basically
+;* calls our C k_main function.
+;*
+;* To enable our kernel to boot via GRUB this also contains what is called
+;* a multiboot header which is a requirement by GRUB.
+;*
+;* Assembler: NASM
+;*
+;* Author: Colin Goudie
+;*
+;* Note: This bootup code was based on code from 
+;*       http://www.osdever.net/tutorials.php?cat=0&sort=1
+;*************************************************************************/
 %include "grub.inc" ; needed for the multiboot header
 
 [BITS 32]
