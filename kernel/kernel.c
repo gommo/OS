@@ -15,13 +15,10 @@
 #include <os/platform.h>
 #include <os/idt.h>
 #include <os/pic.h>
-#include <asm/io.h>
+#include <os/timer.h>
 #include <console.h>
 #include <stdarg.h>
 #include <stdio.h>
-
-#define HZ          100
-#define LATCH       (1193180/HZ)
 
 /** This idea is taken from the linux 0.01 kernel. We set up a 
 user stack but we also use it as the starting kernel stack too */
@@ -39,14 +36,12 @@ int k_main() // like main in a normal C program
     k_printf("booting...", 0);
 
     init_idt();
-
+    
     reprogram_pic( 0x20, 0x28 );
 
     enable();
-   
-    outb_p(0x36,0x43);    // Binary, Mode3,
-    outb_p(LATCH & 0xff, 0x40);   //LSB
-    outb_p(LATCH >> 8, 0x40);
+
+    init_timer();
 
     enable_irq( 0 );
 

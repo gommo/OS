@@ -27,6 +27,19 @@
 extern desc_table idt;
 
 /**
+ * The following externs are functions defined in system_call.S
+ */
+extern void irq0(void);
+
+/**
+ * This function handles most interrupts by finding out the interrupt #
+ * and calling the appropriate handler functions
+ *
+ * @param uint* Pointer to top of stack
+ */
+void main_interrupt_handler(uint* ptr_to_stack);
+
+/**
  * This will be the default exception handler that simply displays a message
  * Replace this later with a good panic function that can display some
  * useful information about the error

@@ -10,7 +10,7 @@
 #
 ##########################################################################
 PROG = kernel.bin
-SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c \
+SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c kernel/timer.c \
 	lib/stdio/vsprintf.c \
 	lib/string/isdigit.c lib/string/strlen.c lib/string/strnlen.c
 OBJS = $(SRCS:.c=.o)

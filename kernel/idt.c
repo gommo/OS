@@ -48,6 +48,11 @@ BOOL init_idt()
     {
         set_interrupt_handler( INTERRUPT_GATE, i, &default_interrupt, KERNEL_CODE, KERNEL_LEVEL);
     }
+
+    //Set the 18 CPU Specific interrupts
+
+    //Set the 16 IRQ Handlers
+    set_interrupt_handler( INTERRUPT_GATE, 0x20, &irq0, KERNEL_CODE, KERNEL_LEVEL );
     
     return TRUE;
 }
@@ -113,7 +118,19 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
     return TRUE;
 }
 
+void main_interrupt_handler(uint* ptr_to_stack)
+{
+    //asm("nop");
+    //klprintf(15, "Top of stack = %08x", *(ptr_to_stack+1));
+    /*struct handler_stack_frame* frame = (struct handler_stack_frame*)ptr_to_stack;
+
+    if (frame->interrupt_number)
+    {
+        klprintf(15, "Handling interrupt #%d", frame->interrupt_number);
+    }*/
+}
+
 void default_interrupt_handler()
 {
-    k_printf("default_exception_handler called", 15);
+    k_printf("default_exception_handler called", 16);
 }

@@ -139,6 +139,9 @@
 				<File
 					RelativePath=".\include\os\taskm.h">
 				</File>
+				<File
+					RelativePath=".\include\os\timer.h">
+				</File>
 			</Filter>
 			<Filter
 				Name="asm"
@@ -175,6 +178,9 @@
 			</File>
 			<File
 				RelativePath=".\kernel\system_call.S">
+			</File>
+			<File
+				RelativePath=".\kernel\timer.c">
 			</File>
 			<File
 				RelativePath=".\kernel\tty.c">
