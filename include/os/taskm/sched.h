@@ -88,5 +88,9 @@ ulong get_pid();
 ulong get_tid();
 /** Returns the idle task */
 struct process* get_idle_task();
+/** Returns the name of the process currently executing */
+char* get_current_task_name();
+/** Schedules the next process/thread to run */
+void schedule();
 
 #endif

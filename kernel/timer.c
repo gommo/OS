@@ -19,6 +19,9 @@
 #define TIMER_FRQ           100
 #define TIMER_CLOCK         1193180
 
+/** Saves the last time the scheduler was called */
+static ulong last_do_tick = 0;
+
 void init_timer()
 {
     //Set our timers frequency
@@ -50,5 +53,15 @@ void set_frequency(uint frequency)
 
 void timer_interrupt_handler()
 {
-    inc_system_ticks();
+    if (last_do_tick + 100 >= inc_system_ticks())
+    {
+        last_do_tick = get_system_ticks();
+        schedule();
+    }
+
+    //Signal the end of interrupt
+    outb(0x20, 0x20);
+    //Enable interrupts
+    enable();
 }
+

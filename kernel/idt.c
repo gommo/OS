@@ -126,7 +126,7 @@ void main_interrupt_handler(uint ptr_to_stack)
 
     if (frame->interrupt_number)
     {
-        klprintf(15, "Handling interrupt #%d", frame->interrupt_number);
+        klprintf(15, "Handling interrupt #%d, ticks=%d", frame->interrupt_number, get_system_ticks());
 
         switch(frame->interrupt_number)
         {

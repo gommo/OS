@@ -54,8 +54,10 @@ void restore_flags(ulong flags);
 ulong get_system_ticks();
 /**
  * Increments the number of kernel ticks by one
+ *
+ * @return Returns the new tick count
  */
-void inc_system_ticks();
+ulong inc_system_ticks();
 /**
  * This creates a segment descriptor and adds it
  * to the GDT

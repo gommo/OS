@@ -11,12 +11,16 @@
 * Author: Colin Goudie
 **************************************************************************/
 #include <os/kernel.h>
+#include <os/taskm/sched.h>
 
 void idle_task(void* ptr)
 {
+    static uint my_loops = 0;
     ptr = ptr;
-    klprintf(9, "In IdleTask");
-
-    for (;;){}
-        //asm volatile ("hlt");
+    
+    for (;;)
+    {
+        klprintf(9, "In %s: %d", get_current_task_name(), my_loops++);
+    }
+        
 }

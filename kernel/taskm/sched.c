@@ -23,12 +23,20 @@ extern struct tss_descriptor tss_desc;
 extern struct tss global_tss;
 /** Head of our High priority process list */
 static struct process* head_hp = NULL;
+/** Current running process */
+static struct process* current = NULL;
 /** Current PID to give out */
 static ulong    current_pid = 0;
 /** Current TID to give out */
 static ulong    current_tid = 0;
 /** Our extern idle function task */
 extern void idle_task(void* ptr);
+/**
+ * Switches to a new process
+ *
+ * @param process* Pointer to the new process
+ */
+void process_switch(struct process* new_process);
 
 void init_sched()
 {
@@ -46,13 +54,14 @@ void init_sched()
     tss_desc.present = 0x1;
     tss_desc.segment_limit_15_00 = sizeof(struct tss) & 0xFFFF;
     tss_desc.segment_limit_19_16 = sizeof(struct tss) >> 16;
-
+/*
     asm volatile ("movl %%esp, %%eax\n\t" : "=r" (temp) :: "memory");
     global_tss.ss0 = KERNEL_DATA;
     global_tss.esp0 = temp;
 
     asm volatile ("ltr %%ax\n\t" :: "a" (SINDEX_TSS << 3));
-
+*/
+    asm volatile ("ltr %%ax\n\t" :: "a" (SINDEX_TSS << 3));
     // Just to test and start I'm going to make the user code segments the whole
     // memory space too (16MB) (Obviously dumb)
 
@@ -74,6 +83,9 @@ void init_sched()
 
     //Create our idle task
     create_proc("Idle Task", &idle_task, NULL);
+
+    global_tss.ss0 = get_idle_task()->thread_list->task_state.ss0;
+    global_tss.esp0 = get_idle_task()->thread_list->task_state.esp0;
 }
 
 void create_proc(char* task_name, void* function, void* params)
@@ -103,13 +115,14 @@ void create_proc(char* task_name, void* function, void* params)
     thread->task_state.fs = USER_DATA;
     thread->task_state.gs = USER_DATA;
     thread->task_state.ss0 = KERNEL_DATA;
-    thread->task_state.esp0 =  (ulong)&thread->kernel_stack[PAGE_SIZE >> 2];;
+    thread->task_state.esp0 =  (ulong)&thread->kernel_stack[PAGE_SIZE >> 2];
 
     //Add the task to our process list
     if (head_hp == NULL)
     {
         //This is the first task 
         head_hp = proc;
+        current = proc;
     }
     else
     {
@@ -120,6 +133,35 @@ void create_proc(char* task_name, void* function, void* params)
         ptr->next = proc;
         proc->prev = ptr;
     }
+}
+
+void schedule()
+{
+    struct process* new_process;
+    if (current->next == NULL)
+    {
+        new_process = head_hp;
+    }
+    else
+    {
+        new_process = current->next;
+    }
+    process_switch(new_process);
+}
+
+void process_switch(struct process* new_process)
+{
+    //Don't bother switching if there is only one task
+   /* if (new_process == current)
+        return;
+
+    //Set up the global tss to use the new processes kernel stack
+    global_tss.ss0 = new_process->thread_list->task_state.ss0;
+    global_tss.esp0 = new_process->thread_list->task_state.esp0;
+*/
+    /*asm("movl   %%esp, %0\n\t"
+        "movl   %%ss, %2\n\t"
+        "movl   %%)*/
 }
 
 struct process* get_idle_task()
@@ -135,6 +177,11 @@ ulong get_pid()
 ulong get_tid()
 {
     return current_tid++;
+}
+
+char* get_current_task_name()
+{
+    return current->name;
 }
 
 

@@ -11,13 +11,17 @@
 * Author: Colin Goudie
 **************************************************************************/
 #include <os/config.h>
-
 #include <os/kernel.h>
+#include <os/taskm/sched.h>
 
-void test_function()
+void test_function(void* ptr)
 {
-    klprintf(9, "In usermode");
+    static uint my_loops = 0;
+    ptr = ptr;
 
-    for (;;){}
+    for (;;)
+    {
+        klprintf(10, "In %s: %d", get_current_task_name(), my_loops++);
+    }
         //asm("hlt");
 }
