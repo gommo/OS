@@ -40,9 +40,9 @@ BOOL init_idt()
 {
     int i;
 
-    klprintf(4, "&idt[0] = 0x%08x", &idt[0]);
-    klprintf(5, "&idt[1] = 0x%08x", &idt[1]);
-    klprintf(6, "&default_interrupt = 0x%08x", &default_interrupt);
+    //klprintf(4, "&idt[0] = 0x%08x", &idt[0]);
+    //klprintf(5, "&idt[1] = 0x%08x", &idt[1]);
+    //klprintf(6, "&default_interrupt = 0x%08x", &default_interrupt);
 
     //First set all our interrupts to the default handler 
     for (i=0; i < NUMBER_OF_INTERRUPTS; i++)
@@ -66,7 +66,7 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
                                     ushort    privilege_level)
 {
     static int count = 0;
-    klprintf(10, "set_interrupt_handler called %d times", ++count);
+    //klprintf(10, "set_interrupt_handler called %d times", ++count);
     switch(type)
     {
     case TASK_GATE:
@@ -79,7 +79,7 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
         idt[interrupt_number].descripts.tsk_gate.reserved3 = 0x0;
         break;
     case INTERRUPT_GATE:
-        klprintf(11, "set_interrupt_handler (INTERRUPT) called %d times", count);    
+        //klprintf(11, "set_interrupt_handler (INTERRUPT) called %d times", count);    
         idt[interrupt_number].descripts.int_trp_cll_gate.offset_15_00 = (ushort)(0x0000FFFF & (uint)handler_address);
         idt[interrupt_number].descripts.int_trp_cll_gate.segment_selector = segment_selector;
         idt[interrupt_number].descripts.int_trp_cll_gate.param_count = 0x0;

@@ -16,6 +16,7 @@
 #include <os/mm/mm.h>
 #include <os/kernel.h>
 #include <os/tty.h>
+#include <asm/io.h>
 
 /** TSS Descriptor created in init.S */
 extern struct tss_descriptor tss_desc;
@@ -40,7 +41,6 @@ void process_switch(struct process* new_process);
 
 void init_sched()
 {
-    uint temp;
     //We have to set up a Task Descriptor in the GDT (Move this to a method call)
     tss_desc.base_address_15_00 = (ushort)(((ulong)(&global_tss)) & 0x0000FFFF);
     tss_desc.base_address_23_16 = (uchar)((((ulong)(&global_tss)) & 0x00FF0000) >> 16);
@@ -83,6 +83,8 @@ void init_sched()
 
     //Create our idle task
     create_proc("Idle Task", &idle_task, NULL);
+    //Set the is_new flag to false as we manually start this
+    get_idle_task()->is_new = FALSE;
 
     global_tss.ss0 = get_idle_task()->thread_list->task_state.ss0;
     global_tss.esp0 = get_idle_task()->thread_list->task_state.esp0;
@@ -102,6 +104,7 @@ void create_proc(char* task_name, void* function, void* params)
     proc->time_to_live = PERMENANT_PROCESS;
     proc->tty_number = NO_TTY;
     proc->next = proc->prev = NULL;
+    proc->is_new = TRUE;
 
     thread->next = NULL;
     thread->prev = NULL;
@@ -152,16 +155,52 @@ void schedule()
 void process_switch(struct process* new_process)
 {
     //Don't bother switching if there is only one task
-   /* if (new_process == current)
+    if (new_process == current)
         return;
+
+    //Save this kernels stack
+    asm("movl   %%esp, %%eax\n\t"
+        "movl   %%eax, %0\n\t"
+        : "=m"(current->thread_list->task_state.esp0));
+
+    if (new_process->is_new)
+    {
+        //Make sure this new process is not new anymore
+        new_process->is_new = FALSE;
+        //Set the current process to this new process
+        current = new_process;
+        //Set up the global tss to use the new processes kernel stack
+        global_tss.ss0 = new_process->thread_list->task_state.ss0;
+        global_tss.esp0 = new_process->thread_list->task_state.esp0;
+
+        //Switch over to the new processes kernel stack
+        asm("movl   %0, %%esp\n\t"
+            "movl   %1, %%ss\n\t"
+            ::"m"(new_process->thread_list->task_state.esp0), "m"(new_process->thread_list->task_state.ss0));
+
+        //Signal the end of interrupt
+        outb(0x20, 0x20);
+        //Enable interrupts
+        enable();
+
+        jump_to_ring3_task(new_process->thread_list->task_state.ss,
+                            new_process->thread_list->task_state.esp,
+                            new_process->thread_list->task_state.cs,
+                            new_process->thread_list->task_state.eip);
+    }
 
     //Set up the global tss to use the new processes kernel stack
     global_tss.ss0 = new_process->thread_list->task_state.ss0;
     global_tss.esp0 = new_process->thread_list->task_state.esp0;
-*/
-    /*asm("movl   %%esp, %0\n\t"
-        "movl   %%ss, %2\n\t"
-        "movl   %%)*/
+
+    //Set the current process to this new process
+    current = new_process;
+
+    //Switch over to the new processes kernel stack
+    asm("movl   %0, %%esp\n\t"
+        "movl   %1, %%ss\n\t"
+        ::"m"(new_process->thread_list->task_state.esp0), "m"(new_process->thread_list->task_state.ss0));
+    
 }
 
 struct process* get_idle_task()

@@ -32,6 +32,24 @@
 
 #define         PERMENANT_PROCESS               -1
 
+/** 
+ * This macro simplies the jump from ring 0 code
+ * to ring 3 code
+ */
+#define jump_to_ring3_task(ss, stk, cs, eip)\
+    asm("movl %0, %%eax\n" \
+    "mov %%ax, %%ds\n" \
+    "mov %%ax, %%es\n" \
+    "mov %%ax, %%fs\n" \
+    "mov %%ax, %%gs\n" \
+    "pushl %0\n" \
+    "pushl %1\n"\
+    "pushl %2\n"\
+    "pushl %3\n"\
+    "pushl %4\n"\
+    "iret\n"\
+    ::"m"(ss), "m"(stk), "i"(2+(1<<9)), "m"(cs), "m"(eip):"%eax")
+
 /**
 * Task structure. This structure is probably the most important structure
 * in the OS. It is used to store all the important information about 
@@ -54,6 +72,8 @@ struct process
     struct thread*      thread_list;
     /** The TTY number that this process can input/output to (-1 if no tty)*/
     int     tty_number;
+    /** Flag to indicate if this task is new */
+    uchar   is_new;
 };
 
 /** 

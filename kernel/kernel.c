@@ -31,14 +31,11 @@ static ulong system_ticks = 0;
 /* The cached state of the interrupts. This starts of as FALSE
    as that is the state of the interrupts when we enter our kernel */
 static uchar interrupts_enabled = FALSE;
-/** This idea is taken from the linux 0.01 kernel. We set up a 
-user stack but we also use it as the starting kernel stack too */
-long    user_stack [ PAGE_SIZE >> 2 ];
-
-long    test_stack [PAGE_SIZE >> 2 ];
+/** This is the location of the kernel's stack */
+long    kernel_stack [ PAGE_SIZE >> 2 ];
 /** Initialise a Stack Descriptor pointing at the top of the user_stack
 (PAGE>>2)  and pointing to our data segment (0x10) */
-struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], KERNEL_DATA };
+struct stack kernel_stack_desc = { &kernel_stack[PAGE_SIZE >> 2], KERNEL_DATA };
 /**
  * This will be the global tss structure
  */
@@ -60,7 +57,7 @@ typedef struct test_structure_2
     uint two;
     uint three;
 } test_struc2;
-extern void idle_task(void* ptr);
+//extern void idle_task(void* ptr);
 int k_main(multiboot_info_t* info) // like main in a normal C program
 {
     struct process* idle;
@@ -73,21 +70,6 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
     init_mm();
     init_idt();
     init_sched();
-
-    //Screwing around with jumping to user mode
-#define move_to_user_mode(ss, stk, cs, eip)\
-    asm("movl %0, %%eax\n" \
-    "mov %%ax, %%ds\n" \
-    "mov %%ax, %%es\n" \
-    "mov %%ax, %%fs\n" \
-    "mov %%ax, %%gs\n" \
-    "pushl %0\n" \
-    "pushl %1\n"\
-    "pushl %2\n"\
-    "pushl %3\n"\
-    "pushl %4\n"\
-    "iret\n"\
-    ::"m"(ss), "m"(stk), "i"(2+(1<<9)), "m"(cs), "m"(eip):"%eax")
 
     reprogram_pic( 0x20, 0x28 );
 
@@ -109,7 +91,7 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
 
     //move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
     //move_to_user_mode( get_idle_task()->thread_list->task_state.esp, get_idle_task()->thread_list->task_state.eip);
-    move_to_user_mode(idle->thread_list->task_state.ss, 
+    jump_to_ring3_task(idle->thread_list->task_state.ss, 
                       idle->thread_list->task_state.esp, 
                       idle->thread_list->task_state.cs, 
                       idle->thread_list->task_state.eip);

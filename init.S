@@ -29,7 +29,7 @@ init:
     mov         %ax, %es
     mov         %ax, %fs
     mov         %ax, %gs
-    lss         start_stack, %esp
+    lss         kernel_stack_desc, %esp
     
     /* Reset EFLAGS */
     push        $2

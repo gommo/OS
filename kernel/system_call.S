@@ -30,7 +30,7 @@ default_interrupt:
     pushl       %edi
     pushl       %esi
         
-    movl        $0x10, %eax        /* Move our level0 datasegment into our
+    movl        $0x10, %eax        /* Move our level 0 datasegment into our
                                       segment registers */
                                       
     movw        %ax, %ds
