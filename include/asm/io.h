@@ -19,6 +19,13 @@ void inline outb(unsigned int value, unsigned int address)
     asm("outb   %%al, %%dx"::"a"(value), "d"(address));
 }
 
+void inline outb_p(unsigned int value, unsigned int address)
+{
+    asm("outb   %%al, %%dx\n\t"
+        "jmp 1f\n\t"
+        "1:\t jmp 1f\n\t"
+        "1:"::"a"(value),"d"(address));
+}
 #endif
 
 

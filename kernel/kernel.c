@@ -27,9 +27,11 @@ k_main() // like main in a normal C program
 	k_clear_screen();
 	k_printf("k_main() started", 0);
 
-    outb(0x36,0x43);    // Binary, Mode3,
-    outb(LATCH & 0xff, 0x40);   //LSB
+    outb_p(0x36,0x43);    // Binary, Mode3,
+    outb_p(LATCH & 0xff, 0x40);   //LSB
     outb(LATCH >> 8, 0x40);
+
+    //Setup the interrupt
         
 };
 
