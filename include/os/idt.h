@@ -45,6 +45,8 @@
 /* IRQ's */
 #define TIMER_IRQ                   0x20
 
+#define SYSTEM_CALL                 0x80
+
 /** 
  * idt actually is defined in init.S
  */

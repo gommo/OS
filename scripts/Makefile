@@ -11,13 +11,14 @@
 ##########################################################################
 PROG = kernel.bin
 SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c kernel/timer.c \
-       kernel/idle.c \
-       kernel/taskm/sched.c \
+       kernel/idle.c kernel/sys.c \
+       kernel/taskm/sched.c kernel/taskm/sema.c \
        kernel/mm/mm.c \
 	lib/stdio/vsprintf.c \
 	lib/string/isdigit.c lib/string/strlen.c lib/string/strnlen.c \
    lib/string/memset.c lib/string/strcpy.c \
-   app/user.c
+   app/user.c \
+   os/os.c
 OBJS = $(SRCS:.c=.o)
 INCS = -I./include -I./ -I./include/lib
 AS = gcc

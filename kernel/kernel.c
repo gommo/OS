@@ -24,7 +24,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-extern void test_function();
+extern void test_function(void* ptr);
+extern void test_function2(void* ptr);
 
 /* Number of System Ticks */
 static ulong system_ticks = 0;
@@ -83,6 +84,7 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
 
     //Add new new process
     create_process("Test Proc", &test_function, NULL, PRIORITY_NORMAL);
+    create_process("Another Proc", &test_function2, NULL, PRIORITY_NORMAL);
 
     klprintf(16, "Idle Task proc lives @ 0x%08x", get_idle_task());
     klprintf(17, "Test proc lives @ 0x%08x", get_idle_task()->next);

@@ -12,21 +12,94 @@
 **************************************************************************/
 #include <os/config.h>
 #include <os/taskm/sema.h>
+#include <os/mm/mm.h>
+#include <os/kernel.h>
 
-int semaphore_init(semaphore_t* sema_handle, int value)
+/* This is the head of our semaphore list */
+static semaphore_t* sema_head = NULL;
+/* This is the tail of our semaphore list */
+static semaphore_t* sema_tail = NULL;
+
+int semaphore_create(sema_handle* sem_handle, int value)
 {
-    *sema_handle.value = value;
-    
+    char interrupts_enabled;
+    interrupts_enabled = return_interrupt_status();
+    disable();
+
+    //Need to create a new semaphore
+    semaphore_t* sema = (semaphore_t*)k_malloc(sizeof(semaphore_t));
+
+    if (sema == NULL)
+    {
+        //Could not create a semaphore
+        return FAILURE;
+    }
+
+    if (sema_tail == NULL) //First semaphore entry
+    {
+        //Initialise this new semaphore
+        sema->handle = 1;
+        sema->value = value;
+        sema->blocked_list = NULL;
+        
+        sema->next = NULL;
+        sema->prev = NULL;
+        //Add to our list
+        sema_head = sema_tail = sema;
+    }
+    else
+    {
+        //Initialise this new semaphore
+        sema->handle = sema_tail->handle + 1;
+        sema->value = value;
+        sema->blocked_list = NULL;
+
+        //Add to our list
+        sema->next = NULL;
+        sema->prev = sema_tail;
+        sema_tail->next = sema;
+        sema_tail = sema;
+    }
+
+    //Return the Handle
+    *sem_handle = sema->handle;
+
+    if (interrupts_enabled)
+        enable();
 
     return SUCCESS;
 }
 
-int semaphore_wait(semaphore_t* sema_handle)
+int semaphore_wait(sema_handle sem_handle)
 {
-    //First decrement the sema_handles value
-    sema_handle->value --;
+    char interrupts_enabled;
+    interrupts_enabled = return_interrupt_status();
+    disable();
 
-    if (sema_handle->value < 0)
+    //First find this semaphore
+    int i=1;
+    semaphore_t* sema = NULL;
+
+    while (i < (int)sem_handle)
+    {
+        if (sema->next != NULL)
+        {
+            sema = sema->next;
+        }
+
+        i++;
+    }
+
+    if (i != (int)sem_handle)
+    {
+        //We didn't find this semaphore
+        return FAILURE;
+    }
+
+    //Now decrement the sema_handles value
+    sema->value --;
+
+    if (sema->value < 0)
     {
         //Need to block the current thread on this semaphore
 
@@ -35,24 +108,53 @@ int semaphore_wait(semaphore_t* sema_handle)
     //We are successfully in this critical section, ensure this thread
     //knows its the one in this critical section
 
-    get_current_thread()->sema = sema_handle;
+    get_current_thread()->sema = sema;
+
+    if (interrupts_enabled)
+        enable();
+
 
     return SUCCESS;
 }
 
-int semaphore_signal(semaphore_t* sema_handle)
+int semaphore_signal(sema_handle sem_handle)
 {
+    char interrupts_enabled;
+    interrupts_enabled = return_interrupt_status();
+    disable();
+
+    //First find this semaphore
+    int i=1;
+    semaphore_t* sema = NULL;
+
+    while (i < (int)sem_handle)
+    {
+        if (sema->next != NULL)
+        {
+            sema = sema->next;
+        }
+
+        i++;
+    }
+
+    if (i != (int)sem_handle)
+    {
+        //We didn't find this semaphore
+        return FAILURE;
+    }
+
+
     //Can only signal the semaphore if this thread is actually in this
     //crictial section
 
-    if (get_current_thread()->sema == sema_handle)
+    if (get_current_thread()->sema == sema)
     {
         //Increment the semaphores value
-        sema_handle->value ++;
+        sema->value ++;
 
         //Ensure we don't go over 1
-        if (sema_handle->value > 1)
-            sema_handle->value = 1;
+        if (sema->value > 1)
+            sema->value = 1;
     }
     else
     {
@@ -61,6 +163,9 @@ int semaphore_signal(semaphore_t* sema_handle)
 
     //We are leaving the critical section
     get_current_thread()->sema = NULL;
+
+    if (interrupts_enabled)
+        enable();
 
     return SUCCESS;
 }

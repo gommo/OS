@@ -15,6 +15,8 @@
 
 #include <os/config.h>
 #include <os/taskm/sched.h>
+
+typedef int sema_handle;
 /**
  * This structure describes a semaphore
  */
@@ -25,6 +27,11 @@ typedef struct semaphore
      * blocked tasks waiting on it 
      */
     uint value;
+    /** Handle for this semaphore */
+    int handle;
+    /* Pointers to go through list of semaphores in OS */
+    struct semaphore* next;
+    struct semaphore* prev;
     /**
      * Ptr to the list of blocked threads on this semaphore
      */
@@ -35,27 +42,29 @@ typedef struct semaphore
 /** Some Semaphore Functions */
 
 /**
- * Initialises the semaphore
+ * Creates a new semaphore
  *
  * @param semaphore_t* Pointer to the semaphore returned by reference
  * @return SUCCESS or FAILURE
  */
-int semaphore_init(semaphore_t* sema_handle, int value);
+int semaphore_create(sema_handle* sem_handle, int value);
 /**
  * Waits on a semaphore
  *
- * @param semaphore_t* semaphore to wait on 
+ * @param sema_handle semaphore to wait on 
  * @return SUCCESS or FAILURE
  *
  * @todo add timeout
  */
-int semaphore_wait(semaphore_t* sema_handle);
+int semaphore_wait(sema_handle sem_handle);
 /**
  * Function to signal the semaphore
  *
- * @param semaphore_t* semaphore to signal
+ * @param sema_handle semaphore to signal
  * @return SUCCESS or FAILURE
  */
-int semaphore_signal(semaphore_t* sema_handle);
+int semaphore_signal(sema_handle sem_handle);
+
 
 #endif
+

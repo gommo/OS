@@ -137,6 +137,9 @@
 					RelativePath=".\include\os\platform.h">
 				</File>
 				<File
+					RelativePath=".\include\os\sys.h">
+				</File>
+				<File
 					RelativePath=".\include\os\timer.h">
 				</File>
 				<File
@@ -198,6 +201,9 @@
 			</File>
 			<File
 				RelativePath=".\kernel\pic.c">
+			</File>
+			<File
+				RelativePath=".\kernel\sys.c">
 			</File>
 			<File
 				RelativePath=".\kernel\system_call.S">
@@ -267,6 +273,13 @@
 			Filter="">
 			<File
 				RelativePath=".\app\user.c">
+			</File>
+		</Filter>
+		<Filter
+			Name="os"
+			Filter="">
+			<File
+				RelativePath=".\os\os.c">
 			</File>
 		</Filter>
 		<File

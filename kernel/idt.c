@@ -14,6 +14,7 @@
 #include <os/idt.h>
 #include <os/kernel.h>
 #include <os/timer.h>
+#include <os/sys.h>
 
 /* defined in system_call.S */
 extern void default_interrupt(void);
@@ -136,6 +137,9 @@ void main_interrupt_handler(uint ptr_to_stack)
             break;
         case TIMER_IRQ:  
             timer_interrupt_handler();
+            break;
+        case SYSTEM_CALL:
+            system_call( frame );
             break;
         }
     }

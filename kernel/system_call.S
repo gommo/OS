@@ -188,4 +188,8 @@ BUILD_INTERRUPT( machine_check, 18);
  BUILD_INTERRUPT( irq14, 0x2D);
  BUILD_INTERRUPT( irq15, 0x2E);
  
+ /**
+  * Build our System Call interrupt
+  */
+ BUILD_INTERRUPT( system_call_entry, 0x80 );
    
