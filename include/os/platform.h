@@ -104,10 +104,6 @@ typedef enum { TASK_GATE = 0x05,
 #define EXECUTE_READ_CODE_SEGMENT       (0x0000 + CODE_SEGMENT + EXECUTE_READ)
 #define READ_WRITE_DATA_SEGMENT         (0x0000 + DATA_SEGMENT + READ_WRITE)
 
-/** Page size for this processor */
-#define     PAGE_SIZE           4096
-
-
 /**
 * A stack frame contains the necessary information
 * to return to an execution space

@@ -40,9 +40,9 @@ BOOL init_idt()
 {
     int i;
 
-    klprintf(3, "&idt[0] = 0x%08x", &idt[0]);
-    klprintf(4, "&idt[1] = 0x%08x", &idt[1]);
-    klprintf(5, "&default_interrupt = 0x%08x", &default_interrupt);
+    klprintf(4, "&idt[0] = 0x%08x", &idt[0]);
+    klprintf(5, "&idt[1] = 0x%08x", &idt[1]);
+    klprintf(6, "&default_interrupt = 0x%08x", &default_interrupt);
 
     //First set all our interrupts to the default handler 
     for (i=0; i < NUMBER_OF_INTERRUPTS; i++)

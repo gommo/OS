@@ -46,6 +46,8 @@
 /* Types.  */
 
 /* The Multiboot header.  */
+#ifndef __MULTIBOOT_H__
+#define __MULTIBOOT_H__
 typedef struct multiboot_header
 {
   unsigned long magic;
@@ -115,5 +117,6 @@ typedef struct memory_map
   unsigned long length_high;
   unsigned long type;
 } memory_map_t;
+#endif
 
 #endif /* ! ASM */

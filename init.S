@@ -29,14 +29,17 @@ init:
     mov         %ax, %es
     mov         %ax, %fs
     mov         %ax, %gs
-    movl        $0xB0B0B0B0, %ebx
     lss         start_stack, %esp
     
     /* Reset EFLAGS */
     push        $2
     popf
     
+    pushl       %ebx                            # Push the pointer to our multiboot header info structure
+    
     call k_main                                 # Jump to our C code
+
+    addl        $4, %esp                        # Clean up the stack
 
     cli
     hlt

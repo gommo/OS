@@ -20,3 +20,10 @@ init_paging()
 {
 
 }
+
+void k_initial_page_fill(multiboot_info_t* info, ulong kernel_page_directory, ulong kernel_page_table)
+{
+    ulong total_memory = (info->mem_lower + info->mem_upper) * 1024;
+    
+}
+

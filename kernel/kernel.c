@@ -11,8 +11,10 @@
  *
  * Author: Colin Goudie
  **************************************************************************/
+#include <os/multiboot.h>
 #include <os/kernel.h>
 #include <os/platform.h>
+#include <os/mm/paging.h>
 #include <os/idt.h>
 #include <os/pic.h>
 #include <os/timer.h>
@@ -46,10 +48,13 @@ struct tss global_tss;
  */
 extern desc_table gdt;
 
-int k_main() // like main in a normal C program
+int k_main(multiboot_info_t* info) // like main in a normal C program
 {
 	k_clear_screen();
     k_printf("booting...", 0);
+
+    klprintf(2, "Low Memory: %d", info->mem_lower);
+    klprintf(3, "High Memory: %d", info->mem_upper);
 
     init_idt();
     init_taskm();
