@@ -112,5 +112,7 @@ struct process* get_idle_task();
 char* get_current_task_name();
 /** Schedules the next process/thread to run */
 void schedule();
+/** Returns current process ptr */
+struct process* get_current_task();
 
 #endif

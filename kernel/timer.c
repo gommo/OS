@@ -15,6 +15,7 @@
 #include <os/timer.h>
 #include <os/kernel.h>
 #include <asm/io.h>
+#include <os/taskm/sched.h>
 
 #define TIMER_FRQ           100
 #define TIMER_CLOCK         1193180
@@ -53,7 +54,7 @@ void set_frequency(uint frequency)
 
 void timer_interrupt_handler()
 {
-    if (last_do_tick + 100 >= inc_system_ticks())
+    if (inc_system_ticks() > last_do_tick + 100)
     {
         last_do_tick = get_system_ticks();
         schedule();

@@ -223,4 +223,9 @@ char* get_current_task_name()
     return current->name;
 }
 
+struct process* get_current_task()
+{
+    return current;
+}
+
 
