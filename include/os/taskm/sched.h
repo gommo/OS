@@ -118,13 +118,9 @@ typedef struct thread
 
 } thread_t;
 
-/**
-* Creates a process to run on this operating system
-*/
-void create_process(char* task_name, void* function, void* params, uint priority);
-/**
- * Initialises the scheduler and idle process
- */
+
+void* create_process(char* task_name, void* function, void* params, uint priority);
+
 void init_sched();
 /** Returns a new Process ID */
 ulong get_pid();
@@ -147,6 +143,6 @@ void remove_current_thread_from_running_queues();
 /** Adds the thread to the running queues */
 void add_thread_to_running_queues(thread_t* thrd);
 /** Sleeps the current thread */
-int sys_sleep(uint seconds);
+int sys_msleep(uint milliseconds);
 
 #endif

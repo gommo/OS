@@ -75,7 +75,9 @@ void thread_switch(thread_t* new_thread);
  * @param thread* Pointer to the new thread
  */
 void thread_switch_to_new_thread(thread_t* new_thread);
-
+/**
+* Initialises the scheduler and idle process
+*/
 void init_sched()
 {
     //We have to set up a Task Descriptor in the GDT (Move this to a method call)
@@ -113,15 +115,24 @@ void init_sched()
         1, 1 );
 
     //Create our idle task
-    create_process("Idle Task", &idle_task, NULL, PRIORITY_LOW);
+    void* temp = create_process("Idle Task", &idle_task, NULL, PRIORITY_LOW);
+    klprintf(16, "idle Task lives @ 0x%08x", temp);
     //Set the is_new flag to false as we manually start this
     get_idle_task()->thread_list->is_new = FALSE;
 
     global_tss.ss0 = get_idle_task()->thread_list->task_state.ss0;
     global_tss.esp0 = get_idle_task()->thread_list->task_state.esp0;
 }
-
-void create_process(char* task_name, void* function, void* params, uint priority)
+/**
+* Creates a process to run on this operating system
+* 
+* @param task_name Name of the process
+* @param function Ptr to the initial function of this process
+* @param params Parameters to pass to the function (NOT IMPLEMENTED)
+* @param priority Priority of this process
+* @return Ptr to the main thread of this function (for debug purposes)
+*/
+void* create_process(char* task_name, void* function, void* params, uint priority)
 {
     process_t* proc;
     thread_t* thread;
@@ -237,10 +248,15 @@ void create_process(char* task_name, void* function, void* params, uint priority
             //Get the next thread belonging to this new process
             th_ptr = th_ptr->pnext;
         }
-        
     }
+    return thread;
 }
-
+/**
+ * Tells the kernel to look for another thread to schedule
+ *
+ * This currently uses four priority queues, it looks for any
+ * highest priority threads first, then lower priority threads.
+ */
 void schedule()
 {
     thread_t* new_thread;
@@ -364,7 +380,11 @@ void schedule()
     else
         thread_switch(new_thread);
 }
-
+/**
+ * Switches to a new thread that hasn't previously been run yet
+ *
+ * @param new_thread ptr to the new thread to run
+ */
 void thread_switch_to_new_thread(thread_t* new_thread)
 {
     asm volatile ("pushal\n\t"                      /* Push all general purpose registers onto stack  */
@@ -405,7 +425,11 @@ void thread_switch_to_new_thread(thread_t* new_thread)
     current_thread->task_state.cs,
     current_thread->task_state.eip);
 }
-
+/**
+ * Switches to a new thread
+ *
+ * @param new_thread ptr to the thread to run
+ */
 void thread_switch(thread_t* new_thread)
 {
     /** Local copy of current thread */
@@ -433,7 +457,10 @@ void thread_switch(thread_t* new_thread)
     context_switch( (ulong*)&current->task_state, (ulong*)&new_thread->task_state, handled_new );
      
 }
-
+/**
+ * Removes the currently running thread from the active running
+ * queues.
+ */
 void remove_current_thread_from_running_queues()
 {
     thread_t* thrd = current_thread;
@@ -512,43 +539,76 @@ void remove_current_thread_from_running_queues()
     thrd->prev = NULL;
     thrd->next = NULL;
 }
-
+/**
+ * Adds the passed in thread to the correct priority queue
+ * ready to be scheduled by the operating system
+ *
+ * @param thrd Thread to add to the running queues
+ */
 void add_thread_to_running_queues(thread_t* thrd)
 {
     thread_t* list = NULL;
+    thread_t** head;
 
     switch(thrd->priority) 
     {
     case PRIORITY_REALTIME:
         list = realtime_priority_head;
+        head = &realtime_priority_head;
         break;
     case PRIORITY_HIGH:
         list = high_priority_head;
+        head = &high_priority_head;
         break;
     case PRIORITY_NORMAL:
         list = normal_priority_head;
+        head = &normal_priority_head;
         break;
     case PRIORITY_LOW:
         list = low_priority_head;
+        head = &low_priority_head;
         break;
     default:
         //Error don't do anything
+        return;
         break;
     }
-
-    while(list->next != NULL)
+    
+    if (list != NULL)
     {
-        list = list->next;
+        while(list->next != NULL)
+        {
+            list = list->next;
+        }
+
+        //list now points to the last thread in the desired running queue
+        list->next = thrd;
+        thrd->prev = list;
+        thrd->next = NULL;
     }
-
-    //list now points to the last thread in the desired running queue
-    list->next = thrd;
-    thrd->prev = list;
-    thrd->next = NULL;
-
+    else
+    {
+        //Head is empty, set it to this thread
+        (*head) = thrd;
+        thrd->prev = NULL;
+        thrd->next = NULL;
+    }
     //It is now attached
 }
-
+/**
+ * This function is called by default when a thread finishes. 
+ *
+ * More specifically when a thread exits its initial function this
+ * function ends up being called. It's ultimate goal is to remove
+ * the current thread from the active running queues and destroy
+ * itself. Currently it removes itself but then goes in an infinite
+ * loop, however, at the next kernel tick another thread will be 
+ * scheduled and this thread then is effectivly gone, however, it's
+ * memory is not freed. Obviously the freeing part needs to be
+ * implemented
+ *
+ * @return SUCCESS
+ */
 int sys_thread_exit()
 {
     remove_current_thread_from_running_queues();
@@ -558,7 +618,12 @@ int sys_thread_exit()
     //Probably set current_thread to the null thread then perform a task switch
     return SUCCESS;
 }
-
+/**
+ * Looks through the list of any sleeping tasks and see if any are
+ * ready to be woken up
+ *
+ * @param ticks The current tick count
+ */
 void check_sleeping_tasks(ulong ticks)
 {
     //Iterate through tasks
@@ -600,14 +665,24 @@ void check_sleeping_tasks(ulong ticks)
     }
 
 }
-
-int sys_sleep(uint seconds)
+/**
+ * Puts the current thread to sleep for the specified number of
+ * milliseconds
+ *
+ * @param milliseconds Time for this thread to sleep for
+ * @return SUCCESS
+ */
+int sys_msleep(uint milliseconds)
 {
+    char interrupts_enabled;
+    interrupts_enabled = return_interrupt_status();
+    disable();
+
     //Add our task to the sleep list
     thread_t* current = get_current_thread();
     thread_t* t;
 
-    current->wake_up_time = get_system_ticks() + (ulong)(seconds * TIMER_FRQ);
+    current->wake_up_time = get_system_ticks() + (ulong)(milliseconds /(1000 / TIMER_FRQ));
 
     if (sleep_head == NULL)
     {
@@ -646,49 +721,76 @@ int sys_sleep(uint seconds)
             temp->sprev = current;
             current->snext = temp;
         }
-
-        //remove current from its queue
-        remove_current_thread_from_running_queues();
-
-        //Before we shedule we need to set currrent thread to blocked for the scheduler
-        current->parent_process->state = TASK_STOPPED;
-
-        //Then call schedule
-        schedule();
-
-        //Once we're here It should mean we have slept
     }
+    
+    //remove current from its queue
+    remove_current_thread_from_running_queues();
+
+    //Before we shedule we need to set currrent thread to blocked for the scheduler
+    current->parent_process->state = TASK_STOPPED;
+
+    //Then call schedule
+    schedule();
+
+    //Once we're here It should mean we have slept
 
 
+    if (interrupts_enabled)
+        enable();
 
     return SUCCESS;
 }
-
+/** 
+ * Returns a pointer to the idle process
+ *
+ * @return ptr to the idle process
+ */
 process_t* get_idle_task()
 {
     return process_head;
 };
-
+/**
+ * Returns the next successive Process ID
+ *
+ * @return Next successive process id
+ */
 ulong get_pid()
 {
     return current_pid++;
 }
-
+/**
+ * Returns the next successive Thread ID
+ * 
+ * @return Next successive thread ID
+ */
 ulong get_tid()
 {
     return current_tid++;
 }
-
+/**
+ * Returns the process name of the currently executing
+ * thread
+ *
+ * @return Name of the currently executing process
+ */
 char* get_current_task_name()
 {
     return current_process->name;
 }
-
+/**
+ * Returns a pointer to the current process
+ *
+ * @return Ptr to the current process
+ */
 process_t* get_current_task()
 {
     return current_process;
 }
-
+/**
+ * Returns a pointer to the current thread
+ * 
+ * @return Ptr to the current thread
+ */
 thread_t* get_current_thread()
 {
     return current_thread;

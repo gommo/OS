@@ -78,28 +78,8 @@ extern void machine_check();
 extern void irq0(void);
 extern void system_call_entry(void);
 
-/**
- * This function handles most interrupts by finding out the interrupt #
- * and calling the appropriate handler functions
- *
- * @param uint Pointer to top of stack
- */
 void main_interrupt_handler(uint ptr_to_stack);
-
-/**
- * This will be the default exception handler that simply displays a message
- * Replace this later with a good panic function that can display some
- * useful information about the error
- */
 void default_interrupt_handler();
-
-/**
-* Initialises the Interrupt Descriptor Table to contain valid descriptors.
-* These are used when interrupts and exceptions occur and jump to valid
-* function handlers
-*
-* @return BOOL true if 
-*/
 BOOL init_idt();
 
 

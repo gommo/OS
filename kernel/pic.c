@@ -17,6 +17,13 @@
 
 static unsigned short irq_mask;
 
+/**
+ * This function reprograms the pic to handle the given interrupt
+ * numbers.
+ *
+ * @param pic1 First 32 interrupts
+ * @param pic2 Second 32 interrupts
+ */
 void reprogram_pic(int pic1, int pic2)
 {
     /* Ensure interrupts are disabled */
@@ -39,6 +46,11 @@ void reprogram_pic(int pic1, int pic2)
     irq_mask = 0xFFFF;
 }
 
+/**
+ * Enables a certain irq number to handle interrupts
+ *
+ * @param number The number of the irq to enable handling of
+ */
 void enable_irq( uchar number )
 {
     //Setup our mask
@@ -54,7 +66,11 @@ void enable_irq( uchar number )
     outb( irq_mask & 0x00FF, PIC1_DATA );
     outb( (irq_mask >> 8) & 0x00FF, PIC2_DATA );
 }
-
+/**
+ * Disables a certain irq number from handling interrupts
+ *
+ * @param number The number of the irq to disable
+ */
 void disable_irq( uchar number )
 {
     //Setup our mask

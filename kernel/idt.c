@@ -22,24 +22,18 @@ extern void default_interrupt(void);
 
 void kernel_error(int error, long eip, long esp, long eax, long ebx, long ecx, long edx, long edi, long esi);
 
-/**
-* This function is used to set up an interrupt handler and descriptor. It
-* inserts into the IDT a correctly formatted descriptor to handle the
-* inputted interrupt number.
-*
-* @param GATE_TYPE Type of the interrupt descriptor
-* @param ushort    Number of the interrupt
-* @param void*     Address of the handling function
-* @param ushort    The segment selector specifies the code segment to be
-*                  used for the handling function
-* @param ushort    The privilege level of the handling code
-*/
 static BOOL set_interrupt_handler(  GATE_TYPE type,
                                     ushort    interrupt_number,
                                     void*     handler_address,
                                     ushort    segment_selector,
                                     ushort    privilege_level);
-
+/**
+* Initialises the Interrupt Descriptor Table to contain valid descriptors.
+* These are used when interrupts and exceptions occur and jump to valid
+* function handlers
+*
+* @return BOOL true if 
+*/
 BOOL init_idt()
 {
     int i;
@@ -81,6 +75,18 @@ BOOL init_idt()
     return TRUE;
 }
 
+/**
+* This function is used to set up an interrupt handler and descriptor. It
+* inserts into the IDT a correctly formatted descriptor to handle the
+* inputted interrupt number.
+*
+* @param type               Type of the interrupt descriptor
+* @param interrupt_number   Number of the interrupt
+* @param handler_address    Address of the handling function
+* @param segment_selected   The segment selector specifies the code segment to be
+*                           used for the handling function
+* @param privilege_level    The privilege level of the handling code
+*/
 static BOOL set_interrupt_handler(  GATE_TYPE type,
                                     ushort    interrupt_number,
                                     void*     handler_address,
@@ -140,6 +146,12 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
     return TRUE;
 }
 
+/**
+* This function handles most interrupts by finding out the interrupt #
+* and calling the appropriate handler functions
+*
+* @param ptr_to_stack Pointer to top of stack
+*/
 void main_interrupt_handler(uint ptr_to_stack)
 {
     struct handler_stack_frame* frame = (struct handler_stack_frame*)&ptr_to_stack;
@@ -169,6 +181,12 @@ void main_interrupt_handler(uint ptr_to_stack)
     }
 }
 
+
+/**
+* This will be the default exception handler that simply displays a message
+* Replace this later with a good panic function that can display some
+* useful information about the error
+*/
 void default_interrupt_handler()
 {
     k_printf("!default_exception_handler called", 23);
@@ -179,6 +197,10 @@ void default_interrupt_handler()
     }
 }
 
+/**
+ * This is a kernel debug function that is called when a fault interrupt 
+ * occurs. It displays the source of the interrupt
+ */
 void kernel_error(int error, long eip, long esp, long eax, long ebx, long ecx, long edx, long edi, long esi)
 {
     char error_msg[80];

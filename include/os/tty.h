@@ -42,17 +42,7 @@ struct tty
     uint line_number;
 };
 
-/**
- * Initialises the tty module 
- */
 void init_tty();
-
-/**
- * Returns a ptr to the tty device specified by the input number
- *
- * @param uint TTY number
- * @return ptr to the tty device
- */
 struct tty* get_tty(uint number);
 
 #endif

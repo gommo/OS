@@ -26,8 +26,6 @@ int semaphore_create(sema_handle* sem_handle, int value)
 {
     char interrupts_enabled;
 
-    klprintf(5, "Entered semaphore_create");
-
     //Need to create a new semaphore
     semaphore_t* sema = (semaphore_t*)k_malloc(sizeof(semaphore_t));
 
@@ -81,6 +79,9 @@ int semaphore_wait(sema_handle sem_handle)
     thread_t* current;
     interrupts_enabled = return_interrupt_status();
     disable();
+
+    klprintf(5, "%s in semaphore_wait", get_current_task()->name);
+    klprintf(6, "                                                               ");
 
     current = get_current_thread();
     //First find this semaphore
@@ -168,6 +169,9 @@ int semaphore_signal(sema_handle sem_handle)
     interrupts_enabled = return_interrupt_status();
     disable();
 
+    klprintf(5, "                                                               ");
+    klprintf(6, "%s in semaphore_signal", get_current_task()->name);
+
     current = get_current_thread();
     //First find this semaphore
     int i=1;
@@ -219,6 +223,8 @@ int semaphore_signal(sema_handle sem_handle)
 
             //Add head_of_blocked to the tail of the correct priority queue
             add_thread_to_running_queues(head_of_blocked);
+
+            head_of_blocked->parent_process->state = TASK_READY;
         }
     }
     else

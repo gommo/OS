@@ -25,15 +25,22 @@ say 2MB (0x300000 - 0x500000)
 
 static uint* heap_ptr = (uint*)0x300000;
 
+/**
+* Initialises the Dynamic Memory Manager
+*/
 void init_mm()
 {
     //Set the first quad-word of the heap to indicate an unused chunk of KERNEL_HEAP_SIZE
     *heap_ptr = 0;
     *heap_ptr |= KERNEL_HEAP_SIZE;
-    
 }
-
-
+/**
+ * Kernel level malloc. This function allocates free memory from the 
+ * heap
+ *
+ * @param size Size in bytes to allocate
+ * @return Pointer to the allocated memory
+ */
 void* k_malloc(size_t size)
 {
     //REMEMBER, size is in bytes but our ptr that moves over our heap is in 
@@ -137,6 +144,11 @@ void* k_malloc(size_t size)
     return NULL;
 }
 
+/**
+ * Frees memory allocated by k_malloc and returns it to the heap
+ *
+ * @param ptr Ptr to the section of memory to free
+ */
 void k_free(void* ptr)
 {
     //Simply unallocated this chunk

@@ -21,7 +21,6 @@ void test_function(void* ptr)
 {
     struct process* current;
     uint my_loops = 0;
-    int i;
     ptr = ptr;
 
     current = get_current_task();
@@ -34,11 +33,8 @@ void test_function(void* ptr)
     
     for (;;)
     {
-        //sema_wait(sema);
-        sleep(1);
-        my_loops = my_loops;
         klprintf(11, "In %s: %d", get_current_task_name(), my_loops++);
-        //sema_signal(sema);
+        sleep(1);
     }
 }
 
@@ -58,8 +54,7 @@ void test_function2(void* ptr)
     
     for (;;)
     {
-        //sema_wait(sema);    
         klprintf(13, "In %s: %d", get_current_task_name(), my_loops++);
-        //sema_signal(sema);
+        sleep(1);
     }
 }

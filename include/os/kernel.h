@@ -16,60 +16,24 @@
 
 #include <os/platform.h>
 
+/**
+ * Simple structure that represents a stack. This is used in the lss
+ * assembly command to load the stack and stack segment selector at the same
+ * time
+ */
 struct stack
 {
     long* a;    /* Pointer to the stack data memory */
     short b;    /* Segment Selector                 */
 };
 
-/**
- * Disables interrupts
- */
 void disable();
-/**
- * Enables Interrupts
- */
 void enable();
-/**
- * Returns the status of interrupts
- */
 uchar return_interrupt_status();
-/**
- * Saves the EFlags register by returning a ulong
- *
- * @return ulong contents of the EFlags register
- */
 ulong save_flags();
-/**
- * Restores the EFlags register
- *
- * @param ulong new Contents of the EFlags register
- */
 void restore_flags(ulong flags);
-/**
- * Returns the number of timer ticks the kernel has done 
- *
- * @return ulong number of ticks
- */
 ulong get_system_ticks();
-/**
- * Increments the number of kernel ticks by one
- *
- * @return Returns the new tick count
- */
 ulong inc_system_ticks();
-/**
- * This creates a segment descriptor and adds it
- * to the GDT
- *
- * @param uint Segment index into the GDT (Not the selector)
- * @param uint Base address of the segment
- * @param uint Segment Limit
- * @param uint Descriptor Type
- * @param uint Privilege level of the segment
- * @param uint Present flag
- * @param uint Granularity of the segment
- */
 void create_gdt_segment_descriptor(   uint segment_index,
                                     uint base_address,
                                     uint segment_limit,

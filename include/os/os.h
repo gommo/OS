@@ -27,5 +27,7 @@ int sema_destroy(sema_handle sem_handle);
 
 int sleep(uint seconds);
 
+int msleep(uint milliseconds);
+
 #endif
 

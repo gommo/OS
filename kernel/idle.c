@@ -13,6 +13,11 @@
 #include <os/kernel.h>
 #include <os/taskm/sched.h>
 
+/**
+ * This is the idle task that runs when no other tasks are ready to run
+ *
+ * @param ptr Parameters passed to this task
+ */
 void idle_task(void* ptr)
 {
     struct process* current;

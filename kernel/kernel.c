@@ -50,7 +50,12 @@ extern desc_table gdt;
 /** Test global semaphore */
 sema_handle sema;
 
-/* This is our first C function that is called. It initialises our kernel */
+/** 
+ * This is our first C function that is called. It initialises our kernel.
+ * Execution begins here
+ *
+ * @param info Some bootup parameters and information passed on by grub
+ */
 int k_main(multiboot_info_t* info) // like main in a normal C program
 {
     /* Declare a process that we'll use for the idle process                */
@@ -85,12 +90,12 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
 
     //Add new new process for test
     sema_create(&sema, 1);
-    create_process("Test Proc", &test_function, NULL, PRIORITY_NORMAL);
-    create_process("Another Proc", &test_function2, NULL, PRIORITY_NORMAL);
-
-    klprintf(16, "Idle Task proc lives @ 0x%08x", get_idle_task());
-    klprintf(17, "Test proc lives @ 0x%08x", get_idle_task()->next);
-
+    void* temp;
+    temp = create_process("Test Proc", &test_function, NULL, PRIORITY_NORMAL);
+    klprintf(17, "Test Proc lives @ 0x%08x", temp);
+    temp = create_process("Another Proc", &test_function2, NULL, PRIORITY_NORMAL);
+    klprintf(18, "Another lives @ 0x%08x", temp);
+   
     idle = get_idle_task();
 
     /* Now we jump to our ring 3 idle task                                  */
@@ -159,34 +164,54 @@ unsigned int k_printf(char *message, unsigned int line) // the message and then 
 
 	return(1);
 }
-
+/**
+* Returns the number of timer ticks the kernel has done 
+*
+* @return ulong number of ticks
+*/
 ulong get_system_ticks()
 {
     return system_ticks;
 }
-
+/**
+* Increments the number of kernel ticks by one
+*
+* @return Returns the new tick count
+*/
 ulong inc_system_ticks()
 {
     return ++system_ticks;
 }
-
+/**
+* Disables interrupts
+*/
 void disable()
 {
     asm volatile ("cli");
     interrupts_enabled = FALSE;
 }
-
+/**
+* Enables Interrupts
+*/
 void enable()
 {
     asm volatile ("sti");
     interrupts_enabled = TRUE;
 }
-
+/**
+* Returns the status of interrupts
+*
+* @return State of the interrupt flag
+*/
 uchar return_interrupt_status()
 {
     return interrupts_enabled;
 }
-
+/**
+* Saves the EFlags register by returning a ulong
+*
+* @return ulong contents of the EFlags register
+*/
 ulong save_flags()
 {
     ulong result;
@@ -195,7 +220,11 @@ ulong save_flags()
                     :"=r" (result) :: "memory");
     return result;
 }
-
+/**
+* Restores the EFlags register
+*
+* @param ulong new Contents of the EFlags register
+*/
 void restore_flags(ulong flags)
 {
     asm volatile (  "pushl  %0\n\t"
@@ -203,6 +232,18 @@ void restore_flags(ulong flags)
                     :: "r" (flags) : "memory");
 }
 
+/**
+* This creates a segment descriptor and adds it
+* to the GDT
+*
+* @param uint Segment index into the GDT (Not the selector)
+* @param uint Base address of the segment
+* @param uint Segment Limit
+* @param uint Descriptor Type
+* @param uint Privilege level of the segment
+* @param uint Present flag
+* @param uint Granularity of the segment
+*/
 void create_gdt_segment_descriptor(   uint segment_index,
                                     uint base_address,
                                     uint segment_limit,

@@ -58,8 +58,13 @@ int thread_exit()
 
 int sleep(uint seconds)
 {
+    return msleep(seconds * 1000);
+}
+
+int msleep(uint milliseconds)
+{
     int result;
-    SYSTEM_CALL_FUNC( SYS_SLEEP, &seconds, &result);
+    SYSTEM_CALL_FUNC( SYS_MSLEEP, &milliseconds, &result);
     return result;
 }
 
