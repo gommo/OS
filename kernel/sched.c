@@ -18,3 +18,13 @@ static ulong    current_pid = 0;
 /** Current TID to give out */
 static ulong    current_tid = 0;
 
+ulong get_pid()
+{
+    return current_pid++;
+}
+
+ulong get_tid()
+{
+    return current_tid++;
+}
+

@@ -12,6 +12,7 @@
 * Author: Colin Goudie
 **************************************************************************/
 #include <os/taskm.h>
+#include <os/sched.h>
 #include <os/kernel.h>
 
 /** TSS Descriptor created in init.S */
@@ -30,19 +31,24 @@ void init_taskm(void)
     tss_desc.zero2 = 0x0;
     tss_desc.dpl = 0x0;
 
+    // Just to test and start I'm going to make the user code segments the whole
+    // memory space too (16MB) (Obviously dumb)
+
     //Create the User Code Segment
     create_gdt_segment_descriptor( SINDEX_USER_CODE, 
-                                 0x1000000,
-                                 0x1000000,
+                                 0x0000000,
+                                 0x1000,
                                  EXECUTE_READ_CODE_SEGMENT,
                                  USER_LEVEL,
                                  1, 1 );
 
     // Create the User Data Segment
     create_gdt_segment_descriptor( SINDEX_USER_DATA, 
-        0x1000000,
-        0x1000000,
+        0x0000000,
+        0x1000,
         READ_WRITE_DATA_SEGMENT,
         USER_LEVEL,
         1, 1 );
+
+
 }

@@ -21,6 +21,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+extern void test_function();
+
 /* Number of System Ticks */
 static ulong system_ticks = 0;
 /* The cached state of the interrupts. This starts of as FALSE
@@ -29,9 +31,12 @@ static uchar interrupts_enabled = FALSE;
 /** This idea is taken from the linux 0.01 kernel. We set up a 
 user stack but we also use it as the starting kernel stack too */
 long    user_stack [ PAGE_SIZE >> 2 ];
+
+long    test_stack [PAGE_SIZE >> 2 ];
 /** Initialise a Stack Descriptor pointing at the top of the user_stack
 (PAGE>>2)  and pointing to our data segment (0x10) */
 struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], KERNEL_DATA };
+
 /**
  * This will be the global tss structure
  */
@@ -48,7 +53,20 @@ int k_main() // like main in a normal C program
 
     init_idt();
     init_taskm();
+
+    //Screwing around with jumping to user mode
+#define move_to_user_mode(stk, eip)\
+    asm(	"pushl %0\n" \
+    "pushl %1\n"\
+    "pushl %2\n"\
+    "pushl %3\n"\
+    "pushl %4\n"\
+    "iret\n"\
+    ::"i"(USER_DATA), "i"(stk), "i"(2+(1<<9)), "i"(USER_CODE), "i"(eip))
+
     
+    move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
+
     reprogram_pic( 0x20, 0x28 );
 
     enable();
