@@ -10,9 +10,13 @@ GCC, and the Gnu Assembler, using gmake.
 
 Notes on this Milestone Build
 -----------------------------
-This build simply displays two threads (One called the idle, and one called a
-test). They simply count a variable up outputting the current value to the
-screen. The scheduler simply swaps between these two threads.
+This build simply displays three threads. They simply count a variable up 
+outputting the current value to the screen. The scheduler simply swaps 
+between these two threads.
+
+Currently this kernel isn't really Real-time. I need to have a good look
+about what things to add and not get carried away designing a more generic
+operating system.
 
 Building the Kernel
 -------------------

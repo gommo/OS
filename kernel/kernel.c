@@ -58,31 +58,41 @@ typedef struct test_structure_2
     uint two;
     uint three;
 } test_struc2;
-//extern void idle_task(void* ptr);
+
+/* This is our first C function that is called. It initialises our kernel */
 int k_main(multiboot_info_t* info) // like main in a normal C program
 {
+    /* Declare a process that we'll use for the idle process                */
     struct process* idle;
+    /* Clear the terminal screen                                            */
 	k_clear_screen();
+    /* Display a message so we know we are booting ok.                      */
+    /* Show us how much memory this machine has                             */
     k_printf("booting...", 0);
-
     klprintf(2, "Low Memory: %d", info->mem_lower);
     klprintf(3, "High Memory: %d", info->mem_upper);
 
+    /* Initialise the memory manager                                        */
     init_mm();
+    /* Initialise our Interrupt Descriptor table to sensible values and     */
+    /* Interrupts                                                           */
     init_idt();
+    /* Initialise the scheduler                                             */
     init_sched();
 
+    /* Reprogram the Programmable Interrupt Controller                      */
     reprogram_pic( 0x20, 0x28 );
-
+    /* Initialise our Timer for preemptive multitasking                     */
     init_timer();
-
+    /* Enable the IRQ that the Timer is attached to so we will get int's    */
     enable_irq( 0 );
 
     klprintf(19, "Starting Kernel");
 
+    /* Enabled Interrupts                                                   */
     enable();
 
-    //Add new new process
+    //Add new new process for test
     create_process("Test Proc", &test_function, NULL, PRIORITY_NORMAL);
     create_process("Another Proc", &test_function2, NULL, PRIORITY_NORMAL);
 
@@ -91,18 +101,18 @@ int k_main(multiboot_info_t* info) // like main in a normal C program
 
     idle = get_idle_task();
 
-    //move_to_user_mode( &test_stack [PAGE_SIZE >> 2 ], &test_function);
-    //move_to_user_mode( get_idle_task()->thread_list->task_state.esp, get_idle_task()->thread_list->task_state.eip);
+    /* Now we jump to our ring 3 idle task                                  */
     jump_to_ring3_task(idle->thread_list->task_state.ss, 
                       idle->thread_list->task_state.esp, 
                       idle->thread_list->task_state.cs, 
                       idle->thread_list->task_state.eip);
-    //Enter temp idle loop
+    
+    /* We never get here */
     for (;;)
         asm("hlt");
 
     return 0;    
-};
+}
 
 void k_clear_screen() // clear the entire text screen
 {

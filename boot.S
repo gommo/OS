@@ -46,8 +46,15 @@
 
     .extern init
 	.globl	start, _start
+
+/* Execution Starts Here. Grub Loads our kernel from location 0x100000  */
+/* which is where our linker script link.ld puts this first function    */	
+
 start:
 _start:
+/* Grub requires the first bytes of our kernel to match a specific      */
+/* layout. As a result, below we set this up but we jump over it to our */
+/* actual code.                                                         */
 	jmp	multiboot_entry
 
 	/* Align 32 bits boundary.  */
@@ -76,6 +83,6 @@ multiboot_header:
 
 multiboot_entry:
 
-	/* Jump to our initialisation code */
+	/* Jump to our initialisation code in init.S                        */
 	call	init
 	

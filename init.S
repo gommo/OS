@@ -19,6 +19,10 @@
 .global init, idt, gdt, tss_desc
 .extern k_main, start_stack
 
+/* In this function we are going to set up the basic functionality      */
+/* before we move to C code. This includes setting up area to put our   */
+/* Interrupt Descriptor Table and Global Descriptor tables, as well as  */
+/* a stack to use.                                                      */
 
 init:
     
@@ -29,6 +33,8 @@ init:
     mov         %ax, %es
     mov         %ax, %fs
     mov         %ax, %gs
+/* Sets up our stack register and stack segment to valid addresses. The */
+/* stack is defined in an area that is declared in kernel.c             */
     lss         kernel_stack_desc, %esp
     
     /* Reset EFLAGS */
