@@ -10,16 +10,16 @@
 #
 ##########################################################################
 PROG = kernel.bin
-SRCS = kernel.c
+SRCS = kernel/kernel.c
 OBJS = $(SRCS:.c=.o)
 INCS = -I./include
 AS = nasm
 ASFLAGS = -f elf
 CC = cc
-CFLAGS = -fwritable-strings
+CFLAGS = -fwritable-strings -nostdinc
 LD = ld
 LINKFILE = link.ld
-LDFLAGS = -T $(LINKFILE)
+LDFLAGS = -T $(LINKFILE) -nostdlib
 
 all: boot $(OBJS)	build
 
@@ -33,5 +33,5 @@ boot:	boot.S
 				$(AS) $(ASFLAGS) $? -o boot.o
 
 clean:
-				rm -f *.o $(PROG)
+				rm -f *.o $(OBJS) $(PROG)
 

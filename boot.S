@@ -20,16 +20,19 @@
 ;*************************************************************************/
 %include "grub.inc" ; needed for the multiboot header
 
-[BITS 32]
+BITS 32
 
-[global start]
-[extern k_main] ; this is in the c file
+GLOBAL start
+EXTERN k_main               ; this is in the c file
 
 start:
-  call k_main
+    jmp init                ; jump to our init code
+    
+start2:
+    call k_main
 
-  cli  ; stop interrupts
-  hlt ; halt the CPU
+    cli                     ; stop interrupts
+    hlt                     ; halt the CPU
 
 
 
@@ -54,3 +57,12 @@ mboot:
 	dd bss
 	dd end
 	dd start
+
+;In our init code we want to set up our Global Descriptor Table,
+;Our Interrupt Descriptor Table and our Stack
+init:
+    jmp start2
+
+
+
+

@@ -14,11 +14,14 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
-#define 				BLACK					0x0
-#define				WHITE					0x7
+#define            VIDEO_MEMORY             0xb8000
 
-#define 				CONSOLE_WIDTH		80
-#define				CONSOLE_HEIGHT		25
-#define				CONSOLE_DEPTH		2
+#define            BLACK                    0x0
+#define            WHITE					0x7
+ 
+
+#define            CONSOLE_WIDTH            80
+#define            CONSOLE_HEIGHT           25
+#define            CONSOLE_DEPTH            2
 
 #endif

@@ -25,9 +25,9 @@ k_main() // like main in a normal C program
 
 void k_clear_screen() // clear the entire text screen
 {
-	char *vidmem = (char *) 0xb8000;
+	char *vidmem = (char *) VIDEO_MEMORY;
 	unsigned int i=0;
-	while(i < (80*25*2))
+	while(i < (CONSOLE_WIDTH * CONSOLE_HEIGHT * CONSOLE_DEPTH))
 	{
 		vidmem[i]=' ';
 		i++;
@@ -38,17 +38,17 @@ void k_clear_screen() // clear the entire text screen
 
 unsigned int k_printf(char *message, unsigned int line) // the message and then the line #
 {
-	char *vidmem = (char *) 0xb8000;
+	char *vidmem = (char *) VIDEO_MEMORY;
 	unsigned int i=0;
 
-	i=(line*80*2);
+	i=(line * CONSOLE_WIDTH * CONSOLE_DEPTH);
 
 	while(*message!=0)
 	{
 		if(*message=='\n') // check for a new line
 		{
 			line++;
-			i=(line*80*2);
+			i=(line * CONSOLE_WIDTH * CONSOLE_DEPTH);
 			*message++;
 		} else {
 			vidmem[i]=*message;
@@ -61,3 +61,14 @@ unsigned int k_printf(char *message, unsigned int line) // the message and then 
 
 	return(1);
 };
+
+/**
+ * Formats a string and prints it on the screen ,just like libc printf
+ * 
+ * @param const char* String format to print
+ * @param ... Variable parameter list
+ */
+void printf(const char* format, ...)
+{
+
+}
