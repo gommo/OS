@@ -16,9 +16,16 @@
 #include <os/idt.h>
 #include <os/pic.h>
 #include <os/timer.h>
+#include <os/taskm.h>
 #include <console.h>
 #include <stdarg.h>
 #include <stdio.h>
+
+/* Number of System Ticks */
+static ulong system_ticks = 0;
+/* The cached state of the interrupts. This starts of as FALSE
+   as that is the state of the interrupts when we enter our kernel */
+static uchar interrupts_enabled = FALSE;
 
 /** This idea is taken from the linux 0.01 kernel. We set up a 
 user stack but we also use it as the starting kernel stack too */
@@ -28,14 +35,13 @@ long    user_stack [ PAGE_SIZE >> 2 ];
 (PAGE>>2)  and pointing to our data segment (0x10) */
 struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], KERNEL_DATA };
 
-extern int timer_interrupt(void);
-
 int k_main() // like main in a normal C program
 {
 	k_clear_screen();
     k_printf("booting...", 0);
 
     init_idt();
+    init_taskm();
     
     reprogram_pic( 0x20, 0x28 );
 
@@ -104,5 +110,48 @@ unsigned int k_printf(char *message, unsigned int line) // the message and then 
 	}
 
 	return(1);
+}
+
+ulong get_system_ticks()
+{
+    return system_ticks;
+}
+
+void inc_system_ticks()
+{
+    system_ticks++;
+}
+
+void disable()
+{
+    asm volatile ("cli");
+    interrupts_enabled = FALSE;
+}
+
+void enable()
+{
+    asm volatile ("sti");
+    interrupts_enabled = TRUE;
+}
+
+uchar return_interrupt_status()
+{
+    return interrupts_enabled;
+}
+
+ulong save_flags()
+{
+    ulong result;
+    asm volatile (  "pushfl\n\t"
+                    "popl %0"
+                    :"=r" (result) :: "memory");
+    return result;
+}
+
+void restore_flags(ulong flags)
+{
+    asm volatile (  "pushl  %0\n\t"
+                    "popfl"
+                    :: "r" (flags) : "memory");
 }
 

@@ -10,7 +10,7 @@
 #
 ##########################################################################
 PROG = kernel.bin
-SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c kernel/timer.c \
+SRCS = kernel/kernel.c kernel/idt.c kernel/pic.c kernel/timer.c kernel/taskm.c \
 	lib/stdio/vsprintf.c \
 	lib/string/isdigit.c lib/string/strlen.c lib/string/strnlen.c
 OBJS = $(SRCS:.c=.o)
@@ -21,7 +21,7 @@ CC = cc
 CFLAGS = -fwritable-strings -nostdinc -Wall -O2
 LD = ld
 LINKFILE = link.ld
-LDFLAGS = -nostdlib -nodefaultlibs -N -Ttext 100000 -Map map
+LDFLAGS = -nostdlib -nodefaultlibs -N -T link.ld -Map map
 
 all: boot init systemcall $(OBJS)	build
 

@@ -16,7 +16,7 @@
 .text
 .align 4
 
-.global init, idt, gdt
+.global init, idt, gdt, tss_desc
 .extern k_main, start_stack
 
 
@@ -82,6 +82,6 @@ gdt:
     .quad   0x00c0920000001000  /* This entry is 16MB Read/Write 
                                    Data Segment. S=1, Privilege = 0,
                                    G=1, D/B=1, AVL = 0              */
-
+tss_desc:
     .fill   253, 8, 0           /* Fill the rest with zeros */
     

@@ -14,8 +14,29 @@
 #ifndef __TASKM_H__
 #define __TASKM_H__
 
+#include <os/config.h>
+
 /** Number of Tasks supported by the Operating System */
 #define         NUMBER_OF_TASKS                 128
+
+/** Task state defines */
+#define         TASK_RUNNING                    3
+#define         TASK_WAITING                    2
+#define         TASK_STOPPED                    1
+#define         TASK_ZOMBIE                     0
+
+/**
+ * Task structure. This structure is probably the most important structure
+ * in the OS. It is used to store all the important information about 
+ * a task
+ */
+struct task_struct
+{
+    /** State of the Task. 0 = zombie, 1 = stopped, 2 = waiting, 3 = running */
+    uchar           state;
+    /** Pointer to this tasks tss */
+    struct tss*     task_tss;
+};
 
 /* Task-State Segment (TSS) Intel Dev Manual 3 (6.2.1)
  *
@@ -81,5 +102,30 @@ struct tss
     long    io_map_base;               /* bits 1-15 zero 
                                           bit 0 contains Trap flag */
 };
+
+/**
+ * This descriptor contains information about locating a tss and
+ * its state etc..
+ */
+struct tss_descriptor
+{
+    ushort  segment_limit_15_00;
+    ushort  base_address_15_00;
+    uchar   base_address_23_16;
+    unsigned type:4;
+    unsigned zero1:1;
+    unsigned dpl:2;
+    unsigned present:1;
+    unsigned limit:4;
+    unsigned avl:1;
+    unsigned zero2:2;
+    unsigned granularity:1;
+    uchar   base_address_31_42;
+};
+
+/**
+ * Initialises task management. 
+ */
+void init_taskm(void);
 
 #endif

@@ -94,12 +94,25 @@ main_interrupt:
 
 /**
  * This macro is an excellent idea taken from Tabos OS to generate interrupt
- * handling functions
+ * handling functions. The BUILD_INTERRUPT macro includes an error code and
+ * is used for CPU Exceptions that don't include an error code by default. It
+ * is also used to build IRQ handlers. 
  */
 #define BUILD_INTERRUPT(name, number)\
 .global name; \
 name: \
 	pushl	$0; \
+	pushl	$number;   \
+	jmp		main_interrupt;
+
+/**
+ * Builds an interrupt handler but expects that the CPU pushes an error
+ * code onto the stack. The interrupts that do that can be found in the
+ * Intel Dev Manual #3 S:5.3 Table 5-1
+ */
+#define BUILD_INTER_WEC(name, number)\
+.global name; \
+name: \
 	pushl	$number;   \
 	jmp		main_interrupt;
 	
@@ -114,16 +127,16 @@ BUILD_INTERRUPT( instruction_overflow, 4);
 BUILD_INTERRUPT( instruction_overrange, 5);
 BUILD_INTERRUPT( invalid_opcode, 6);
 BUILD_INTERRUPT( no_coprocessor, 7);
-BUILD_INTERRUPT( double_fault, 8);
-BUILD_INTERRUPT( copressor_segment_overrun, 9);
-BUILD_INTERRUPT( invalid_tss, 10);
-BUILD_INTERRUPT( segment_not_present, 11);
-BUILD_INTERRUPT( stack_fault, 12);
-BUILD_INTERRUPT( general_protection_fault, 13);
-BUILD_INTERRUPT( page_fault, 14);
+BUILD_INTER_WEC( double_fault, 8);
+BUILD_INTERRUPT( coprocessor_segment_overrun, 9);
+BUILD_INTER_WEC( invalid_tss, 10);
+BUILD_INTER_WEC( segment_not_present, 11);
+BUILD_INTER_WEC( stack_fault, 12);
+BUILD_INTER_WEC( general_protection_fault, 13);
+BUILD_INTER_WEC( page_fault, 14);
 BUILD_INTERRUPT( reserved15, 15);
 BUILD_INTERRUPT( coprocessor_error, 16);
-BUILD_INTERRUPT( alignment_check, 17);
+BUILD_INTER_WEC( alignment_check, 17);
 BUILD_INTERRUPT( machine_check, 18);
 /**
  * Build the 19-31 reserved exceptions 

@@ -20,10 +20,6 @@
 #define     KERNEL_CODE          0x8
 #define     KERNEL_DATA          0x10
 
-/* Defines for interrupt enabling/disabling */
-#define     disable()           asm volatile ("cli")
-#define     enable()            asm volatile ("sti")
-
 struct stack
 {
     long* a;    /* Pointer to the stack data memory */
@@ -43,17 +39,63 @@ struct handler_stack_frame
     uint    ebx, edx, ecx, eax;     //General purpose registers
     
     uint    interrupt_number;       //Interrupt Number
-    uint    error_code;             //Error code
 
+    /* These values are first pushed onto the stack by the process
+       of the processor doing an interrupt. See Intel Dev Manual 
+       #1 S:6.4.1 (Fig 6-5)
+     */
+    uint    error_code;             //Error code
     uint    eip, cs;                //Calling codes cs:ip
     uint    flags;                  //Eflags register
     uint    esp, ss;                //Calling codes ss:esp
 
 };
 
+/**
+ * Disables interrupts
+ */
+void disable();
+/**
+ * Enables Interrupts
+ */
+void enable();
+/**
+ * Returns the status of interrupts
+ */
+uchar return_interrupt_status();
+/**
+ * Saves the EFlags register by returning a ulong
+ *
+ * @return ulong contents of the EFlags register
+ */
+ulong save_flags();
+/**
+ * Restores the EFlags register
+ *
+ * @param ulong new Contents of the EFlags register
+ */
+void restore_flags(ulong flags);
+/**
+ * Returns the number of timer ticks the kernel has done 
+ *
+ * @return ulong number of ticks
+ */
+ulong get_system_ticks();
+/**
+ * Increments the number of kernel ticks by one
+ */
+void inc_system_ticks();
+
 void k_clear_screen();
 unsigned int k_printf(char *message, unsigned int line);
 void klprintf(uint line, uchar* fmt, ...);
 
 #endif
+/*************************************************************************
+* "And don't EVER make the mistake that you can design something better 
+*  than what you get from ruthless massively parallel trial-and-error 
+*  with a feedback cycle. 
+*  That's giving your intelligence _much_ too much credit.
+*       - Linux Torvalds
+*************************************************************************/
 

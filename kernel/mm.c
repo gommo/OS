@@ -1,16 +1,14 @@
 /*************************************************************************
-*                             -=-=-= tty.c =-=-=-
+*                             -=-=-= mm.c =-=-=-
 *
 * THIS FILE WAS CREATED FOR ELEC4710 - REALTIME SYSTEMS
 * MAJOR PROJECT ASSIGNMENT
 *
-* This file contains the functions that coordinate the i/o to the user
-* via the screen & keyboard
+* This file contains functions and structures used to perform memory 
+* management for our operating system
 *
 * Compiler: gcc
 *
 * Author: Colin Goudie
 **************************************************************************/
-#include <os/tty.h>
-
-
+#include <os/mm.h>

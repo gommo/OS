@@ -12,10 +12,12 @@
 * 
 * Note: MUCH OF THIS CODE IS BASED ON GPL CODE AVAILABLE FROM THE LIBC 
 *       LIBRARY AND THE LINUX KERNEL
+*       The actual functions needed by the C Library were referenced from
+*       http://www.acm.uiuc.edu/webmonkeys/book/c_guide/
 **************************************************************************/
 #include <string.h>
 
-unsigned int strnlen( const char *s, unsigned int count )
+size_t strnlen( const char *s, unsigned int count )
 {
     const char *sc;
 

@@ -13,6 +13,7 @@
 **************************************************************************/
 #include <os/idt.h>
 #include <os/kernel.h>
+#include <os/timer.h>
 
 /* defined in system_call.S */
 extern void default_interrupt(void);
@@ -52,6 +53,7 @@ BOOL init_idt()
     //Set the 18 CPU Specific interrupts
 
     //Set the 16 IRQ Handlers
+    /* Timer interrupt */
     set_interrupt_handler( INTERRUPT_GATE, 0x20, &irq0, KERNEL_CODE, KERNEL_LEVEL );
     
     return TRUE;
@@ -118,16 +120,25 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
     return TRUE;
 }
 
-void main_interrupt_handler(uint* ptr_to_stack)
+void main_interrupt_handler(uint ptr_to_stack)
 {
-    //asm("nop");
-    //klprintf(15, "Top of stack = %08x", *(ptr_to_stack+1));
-    /*struct handler_stack_frame* frame = (struct handler_stack_frame*)ptr_to_stack;
+    struct handler_stack_frame* frame = (struct handler_stack_frame*)&ptr_to_stack;
 
     if (frame->interrupt_number)
     {
         klprintf(15, "Handling interrupt #%d", frame->interrupt_number);
-    }*/
+
+        switch(frame->interrupt_number)
+        {
+        
+        case 0: case 1: case 2: case 3:
+
+            break;
+        case TIMER_IRQ:  
+            timer_interrupt_handler();
+            break;
+        }
+    }
 }
 
 void default_interrupt_handler()

@@ -24,7 +24,7 @@ typedef enum {FALSE=0, TRUE=1} BOOL;
 
 #define TRUE    ((uchar)1)
 #define FALSE   ((uchar)0)
-#define NULL    ((void*)0)
+//#define NULL    ((void*)0)
 
 #define PACK __attribute__   ((pack))
 
