@@ -1,0 +1,2 @@
+objdump -d kernel.bin | grep "^[^ ]" > dump
+objdump -d kernel.bin > bigdump

@@ -131,6 +131,9 @@
 					RelativePath=".\include\os\multiboot.h">
 				</File>
 				<File
+					RelativePath=".\include\os\pic.h">
+				</File>
+				<File
 					RelativePath=".\include\os\platform.h">
 				</File>
 				<File
@@ -166,6 +169,9 @@
 			</File>
 			<File
 				RelativePath=".\kernel\kernel.c">
+			</File>
+			<File
+				RelativePath=".\kernel\pic.c">
 			</File>
 			<File
 				RelativePath=".\kernel\system_call.S">

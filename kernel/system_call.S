@@ -34,7 +34,7 @@ default_interrupt:
     movw        %ax, %ds
     movw        %ax, %es
     
-    call        default_interrupt
+    call        default_interrupt_handler
     
     popl	%esi
 	popl	%edi

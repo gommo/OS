@@ -20,6 +20,9 @@
 #define     KERNEL_CODE          0x8
 #define     KERNEL_DATA          0x10
 
+/* Defines for interrupt enabling/disabling */
+#define     disable()           asm volatile ("cli")
+#define     enable()            asm volatile ("sti")
 
 struct stack
 {

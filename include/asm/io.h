@@ -16,17 +16,26 @@
 
 #include <os/config.h>
 
-void inline outb(uint value, uint address)
+static void inline outb(uchar value, uint address)
 {
     asm("outb   %%al, %%dx"::"a"(value), "d"(address));
 }
 
-void inline outb_p(uint value, uint address)
+static void inline outb_p(uchar value, uint address)
 {
     asm("outb   %%al, %%dx\n\t"
         "jmp 1f\n\t"
         "1:\t jmp 1f\n\t"
         "1:"::"a"(value),"d"(address));
+}
+
+static uchar inline inb( ushort address )
+{
+    uchar result;
+
+    asm("inb %%dx, %%ax" : "=a" (result) : "d" (address) );
+
+    return result;
 }
 #endif
 

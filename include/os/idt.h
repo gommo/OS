@@ -31,7 +31,7 @@ extern desc_table idt;
  * Replace this later with a good panic function that can display some
  * useful information about the error
  */
-void default_exception_handler();
+void default_interrupt_handler();
 
 /**
 * Initialises the Interrupt Descriptor Table to contain valid descriptors.

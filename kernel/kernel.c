@@ -14,6 +14,7 @@
 #include <os/kernel.h>
 #include <os/platform.h>
 #include <os/idt.h>
+#include <os/pic.h>
 #include <asm/io.h>
 #include <console.h>
 #include <stdarg.h>
@@ -28,7 +29,7 @@ long    user_stack [ PAGE_SIZE >> 2 ];
 
 /** Initialise a Stack Descriptor pointing at the top of the user_stack
 (PAGE>>2)  and pointing to our data segment (0x10) */
-struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], 0x10 };
+struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], KERNEL_DATA };
 
 extern int timer_interrupt(void);
 
@@ -39,11 +40,18 @@ int k_main() // like main in a normal C program
 
     init_idt();
 
+    reprogram_pic( 0x20, 0x28 );
+
+    enable();
    
-    /*outb(0x36,0x43);    // Binary, Mode3,
-    outb(LATCH & 0xff, 0x40);   //LSB
-    outb(LATCH >> 8, 0x40);
-*/
+    outb_p(0x36,0x43);    // Binary, Mode3,
+    outb_p(LATCH & 0xff, 0x40);   //LSB
+    outb_p(LATCH >> 8, 0x40);
+
+    enable_irq( 0 );
+
+    klprintf(19, "Entering while(1){}");
+
     while(1){}
     
     return 0;    
@@ -97,9 +105,9 @@ unsigned int k_printf(char *message, unsigned int line) // the message and then 
 			i++;
 			vidmem[i]=WHITE;
 			i++;
-		};
-	};
+		}
+	}
 
 	return(1);
-};
+}
 

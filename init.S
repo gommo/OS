@@ -33,10 +33,8 @@ init:
     lss         start_stack, %esp
     
     /* Reset EFLAGS */
-    pushl   $0
+    push        $2
     popf
-
-    //sti
     
     call k_main                                 # Jump to our C code
 

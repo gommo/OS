@@ -113,7 +113,7 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
     return TRUE;
 }
 
-void default_exception_handler()
+void default_interrupt_handler()
 {
     k_printf("default_exception_handler called", 15);
 }
