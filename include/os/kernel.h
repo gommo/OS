@@ -29,6 +29,7 @@ struct stack
 
 void k_clear_screen();
 unsigned int k_printf(char *message, unsigned int line);
+void klprintf(uint line, uchar* fmt, ...);
 
 #endif
 

@@ -144,6 +144,19 @@
 					RelativePath=".\include\asm\io.h">
 				</File>
 			</Filter>
+			<Filter
+				Name="lib"
+				Filter="">
+				<File
+					RelativePath=".\include\lib\stdarg.h">
+				</File>
+				<File
+					RelativePath=".\include\lib\stdio.h">
+				</File>
+				<File
+					RelativePath=".\include\lib\string.h">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="kernel"
@@ -160,6 +173,30 @@
 			<File
 				RelativePath=".\kernel\tty.c">
 			</File>
+		</Filter>
+		<Filter
+			Name="lib"
+			Filter="">
+			<Filter
+				Name="string"
+				Filter="">
+				<File
+					RelativePath=".\lib\string\isdigit.c">
+				</File>
+				<File
+					RelativePath=".\lib\string\strlen.c">
+				</File>
+				<File
+					RelativePath=".\lib\string\strnlen.c">
+				</File>
+			</Filter>
+			<Filter
+				Name="stdio"
+				Filter="">
+				<File
+					RelativePath=".\lib\stdio\vsprintf.c">
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\boot.S">

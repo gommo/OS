@@ -38,6 +38,11 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
 BOOL init_idt()
 {
     int i;
+
+    klprintf(3, "&idt[0] = 0x%08x", &idt[0]);
+    klprintf(4, "&idt[1] = 0x%08x", &idt[1]);
+    klprintf(5, "&default_interrupt = 0x%08x", &default_interrupt);
+
     //First set all our interrupts to the default handler 
     for (i=0; i < NUMBER_OF_INTERRUPTS; i++)
     {
@@ -53,6 +58,8 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
                                     ushort    segment_selector,
                                     ushort    privilege_level)
 {
+    static int count = 0;
+    klprintf(10, "set_interrupt_handler called %d times", ++count);
     switch(type)
     {
     case TASK_GATE:
@@ -64,7 +71,30 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
         idt[interrupt_number].descripts.tsk_gate.present = 0x1;
         idt[interrupt_number].descripts.tsk_gate.reserved3 = 0x0;
         break;
-    case INTERRUPT_GATE || TRAP_GATE || CALL_GATE:
+    case INTERRUPT_GATE:
+        klprintf(11, "set_interrupt_handler (INTERRUPT) called %d times", count);    
+        idt[interrupt_number].descripts.int_trp_cll_gate.offset_15_00 = (ushort)(0x0000FFFF & (uint)handler_address);
+        idt[interrupt_number].descripts.int_trp_cll_gate.segment_selector = segment_selector;
+        idt[interrupt_number].descripts.int_trp_cll_gate.param_count = 0x0;
+        idt[interrupt_number].descripts.int_trp_cll_gate.zeros = 0x0;
+        idt[interrupt_number].descripts.int_trp_cll_gate.type = type;
+        idt[interrupt_number].descripts.int_trp_cll_gate.zero2 = 0x0;
+        idt[interrupt_number].descripts.int_trp_cll_gate.dpl = privilege_level;
+        idt[interrupt_number].descripts.int_trp_cll_gate.present = 0x1;
+        idt[interrupt_number].descripts.int_trp_cll_gate.offset_31_16 = (ushort)((uint)handler_address >> 16);
+        break;
+    case TRAP_GATE:
+        idt[interrupt_number].descripts.int_trp_cll_gate.offset_15_00 = (ushort)(0x0000FFFF & (uint)handler_address);
+        idt[interrupt_number].descripts.int_trp_cll_gate.segment_selector = segment_selector;
+        idt[interrupt_number].descripts.int_trp_cll_gate.param_count = 0x0;
+        idt[interrupt_number].descripts.int_trp_cll_gate.zeros = 0x0;
+        idt[interrupt_number].descripts.int_trp_cll_gate.type = type;
+        idt[interrupt_number].descripts.int_trp_cll_gate.zero2 = 0x0;
+        idt[interrupt_number].descripts.int_trp_cll_gate.dpl = privilege_level;
+        idt[interrupt_number].descripts.int_trp_cll_gate.present = 0x1;
+        idt[interrupt_number].descripts.int_trp_cll_gate.offset_31_16 = (ushort)((uint)handler_address >> 16);
+        break;
+    case CALL_GATE:
         idt[interrupt_number].descripts.int_trp_cll_gate.offset_15_00 = (ushort)(0x0000FFFF & (uint)handler_address);
         idt[interrupt_number].descripts.int_trp_cll_gate.segment_selector = segment_selector;
         idt[interrupt_number].descripts.int_trp_cll_gate.param_count = 0x0;

@@ -10,9 +10,11 @@
 #
 ##########################################################################
 PROG = kernel.bin
-SRCS = kernel/kernel.c kernel/idt.c
+SRCS = kernel/kernel.c kernel/idt.c \
+	lib/stdio/vsprintf.c \
+	lib/string/isdigit.c lib/string/strlen.c lib/string/strnlen.c
 OBJS = $(SRCS:.c=.o)
-INCS = -I./include -I./
+INCS = -I./include -I./ -I./include/lib
 AS = gcc
 ASFLAGS = -nostdinc
 CC = cc

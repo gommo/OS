@@ -16,6 +16,8 @@
 #include <os/idt.h>
 #include <asm/io.h>
 #include <console.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #define HZ          100
 #define LATCH       (1193180/HZ)
@@ -59,6 +61,21 @@ void k_clear_screen() // clear the entire text screen
 		i++;
 	};
 };
+
+void klprintf(uint line, uchar* fmt, ...)
+{
+    //Set aside a large buffer for input
+    uchar buffer[1024];
+
+    va_list arguments;
+    va_start(arguments, fmt);
+
+    vsprintf( buffer, fmt, arguments );
+
+    k_printf(buffer, line);
+
+    va_end(arguments);
+}
 
 unsigned int k_printf(char *message, unsigned int line) // the message and then the line #
 {

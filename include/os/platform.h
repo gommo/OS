@@ -60,9 +60,9 @@
  * (See Intel Dev Manual 3 (S:5.11  [IDT Types])
  */
 typedef enum { TASK_GATE = 0x05,
-            INTERRUPT_GATE = 0x0E,
-            TRAP_GATE = 0x0F,
-            CALL_GATE = 0x0C } GATE_TYPE;
+               INTERRUPT_GATE = 0x0E,
+               TRAP_GATE = 0x0F,
+               CALL_GATE = 0x0C } GATE_TYPE;
 
 /* Code and Data Segment Type Defines. These are structured in such
  * a way as to be able to bitwise OR them to a descriptor field after
