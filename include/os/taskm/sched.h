@@ -93,10 +93,13 @@ struct thread
     struct thread*          pprev;
     /** Threads Task State Structure, this is where all the data a thread needs is held */
     struct tss              task_state;
+    /** This flag if set to 1, indicates that this thread has given way to a virgin task */
+    uchar                   handled_new;
     long                    user_stack[PAGE_SIZE >> 2];
     long                    kernel_stack[PAGE_SIZE >> 2];
     /** Flag to indicate if this thread is new */
-    uchar   is_new;
+    uchar                   is_new;
+    
 };
 
 /**

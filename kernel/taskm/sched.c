@@ -38,7 +38,7 @@ static ulong    current_pid = 0;
 /** Current TID to give out */
 static ulong    current_tid = 0;
 /** Context Switch assembly function */
-extern void context_switch( ulong* old_task_state, ulong* new_task_state );
+extern void context_switch( ulong* old_task_state, ulong* new_task_state, uchar handled_new );
 /** Our extern idle function task */
 extern void idle_task(void* ptr);
 /**
@@ -130,6 +130,7 @@ void create_proc(char* task_name, void* function, void* params)
     thread->task_state.ss0 = KERNEL_DATA;
     thread->task_state.esp0 =  (ulong)&thread->kernel_stack[PAGE_SIZE >> 2];
     thread->is_new = TRUE;
+    thread->handled_new = FALSE;
 
     //Add the task to our process list
     if (ready_head == NULL)
@@ -185,24 +186,39 @@ void schedule()
         new_thread = current_thread->next;
     }
     if (new_thread->is_new)
+    {
         thread_switch_to_new_thread(new_thread);
+        //We are now on a new thread
+        current_thread->handled_new = FALSE;
+        //Set up the global tss to use the new processes kernel stack
+        global_tss.ss0 = new_thread->task_state.ss0;
+        global_tss.esp0 = new_thread->task_state.esp0;
+
+        current_thread->parent_process->state = TASK_READY;
+        //Set the current process to this new process
+        current_thread = new_thread;
+        current_thread->parent_process->state = TASK_RUNNING;
+        current_process = current_thread->parent_process;
+    }
     else
         thread_switch(new_thread);
 }
 
 void thread_switch_to_new_thread(struct thread* new_thread)
 {
-    asm volatile ("pushal\n\t"                      /* Push all general purpose registers onto stack                    */
+
+    asm volatile ("pushal\n\t"                      /* Push all general purpose registers onto stack  */
                   "movl    %0, %%eax\n\t"           /* Put the address of old_task_state in eax                         */
-                  "addl    $12, %%esp\n\t"           /* Clean up this stack */
                   "movl    %%esp, 4(%%eax)\n\t"     /* move the current stack pointer into esp0 in task_state structure */
                   "movw    %%ss, 8(%%eax)\n\t"      /* move the current ss into ss0 in old_task_state structure         */
-                  ::"m"(&current_thread->task_state));
+                  ::"m"(&current_thread->task_state));//, "m"(ptr-1));//, "i"(12));
 
     //Make sure this new process is not new anymore
     new_thread->is_new = FALSE;
     //Set the current threads process to ready
     current_thread->parent_process->state = TASK_READY;
+    /** The current thread has handled a new task */
+    current_thread->handled_new = TRUE;
     //Set the current thread to this new thread
     current_thread = new_thread;
     current_thread->parent_process->state = TASK_RUNNING;
@@ -213,8 +229,8 @@ void thread_switch_to_new_thread(struct thread* new_thread)
 
     //Switch over to the new processes kernel stack
     asm volatile ("movl   %0, %%esp\n\t"
-    "movl   %1, %%ss\n\t"
-    ::"m"(current_thread->task_state.esp0), "m"(current_thread->task_state.ss0));
+                  "movl   %1, %%ss\n\t"
+                  ::"m"(current_thread->task_state.esp0), "m"(current_thread->task_state.ss0));
 
     //Signal the end of interrupt
     outb(0x20, 0x20);
@@ -225,7 +241,6 @@ void thread_switch_to_new_thread(struct thread* new_thread)
     current_thread->task_state.esp,
     current_thread->task_state.cs,
     current_thread->task_state.eip);
-   
 }
 
 void thread_switch(struct thread* new_thread)
@@ -234,13 +249,7 @@ void thread_switch(struct thread* new_thread)
     if (new_thread == current_thread)
         return;
 
-    //Save this kernels stack pointer
-    /*asm volatile ("movl   %%esp, %%eax\n\t"
-                  "movl   %%eax, %0\n\t"
-                  : "=m"(current_thread->task_state.esp0));
-
-    */
-    context_switch( &current_thread->task_state, &new_thread->task_state );
+    context_switch( &current_thread->task_state, &new_thread->task_state, new_thread->handled_new );
     
     //Set up the global tss to use the new processes kernel stack
     global_tss.ss0 = new_thread->task_state.ss0;
@@ -251,12 +260,6 @@ void thread_switch(struct thread* new_thread)
     current_thread = new_thread;
     current_thread->parent_process->state = TASK_RUNNING;
     current_process = current_thread->parent_process;
-
-    //Switch over to the new processes kernel stack
-    asm volatile ("movl   %0, %%esp\n\t"
-        "movl   %1, %%ss\n\t"
-        ::"m"(current_thread->task_state.esp0), "m"(current_thread->task_state.ss0));
-    
 }
 
 struct process* get_idle_task()
