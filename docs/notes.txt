@@ -1,0 +1,56 @@
+==>> Grub should leave the machine in a set state
+http://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html#Machine%20state
+
+==>> Interupt Descriptor Table needs to be set up
+(Linux 0.01 code boot/head.S Around line 51)
+
+Basically Linus is making a Interrupt Descriptor Table Entry (http://www.acm.uiuc.edu/sigops/roll_your_own/i386/idt.html)
+
+Target Segment Selector = 0x0008 (http://www.acm.uiuc.edu/sigops/roll_your_own/i386/boot.html#predefsel)
+Basically that is a 32bit Kernel (level 0) Code Segment
+
+Offset in Target Segment 15..0 (Lower address of ignore_int)
+Offset in Target Segment 31..16 (Upper address of ignore_int)
+
+movw $0x8E00 Sets the Descriptor as an Interrrupt Gate, 
+					Sets DPL=0 (Hardware Interrupt)
+					Present is set (required)
+
+
+==>> Global Descriptor Table
+Interpretting Linux 0.01 GDT (head.s line 172)
+
+.quad 0x00c09a00000007ff
+
+	
+	 HB   LB   (HB=Hight Byte, LB=Low Byte)
+Word 0 : 07 : ff
+Word 1 : 00 : 00
+Word 2 : 9a : 00
+Word 3 : 00 : c0
+
+Using Fig 1.3 @ http://microlabs.cs.utt.ro/~mmarcu/books/03/p_all3.htm
+
+Segment Size 0..15 = 0x07ff
+Segment Size 16..19= 0x00
+Size = 0x0007ff ==> (2047 * 4096(see 'G' Below) = 8MB Segment)
+
+Segment Base 0..15 = 0x0000
+Segment Base 16..23= 0x00
+Segment Base 24..31= 0x00
+Base = 0x0000:0000
+
+Access Rights
+Lower Nibble = a = 1010
+Therefor Access bit = 0 => Segment is not used
+Type = 101 = 5 = Code Segment
+
+High Nibble = 9 = 1001
+G = 1 = Descriptor uses 4096byte as unit
+D = 0 = 80286 compatible 
+0 = Reserved must be 0
+1 = Available for additional info
+
+
+
+
