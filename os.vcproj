@@ -140,9 +140,6 @@
 					RelativePath=".\include\os\platform.h">
 				</File>
 				<File
-					RelativePath=".\include\os\segment.h">
-				</File>
-				<File
 					RelativePath=".\include\os\taskm.h">
 				</File>
 				<File

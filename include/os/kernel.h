@@ -15,7 +15,6 @@
 #define __KERNEL_H__
 
 #include <os/platform.h>
-#include <os/segment.h>
 
 struct stack
 {
@@ -82,11 +81,21 @@ ulong get_system_ticks();
  * Increments the number of kernel ticks by one
  */
 void inc_system_ticks();
-
-void create_gdt_segment_selector(   uint segment_index,
+/**
+ * This creates a segment descriptor and adds it
+ * to the GDT
+ *
+ * @param uint Segment index into the GDT (Not the selector)
+ * @param uint Base address of the segment
+ * @param uint Segment Limit
+ * @param uint Descriptor Type
+ * @param uint Privilege level of the segment
+ * @param uint Present flag
+ * @param uint Granularity of the segment
+ */
+void create_gdt_segment_descriptor(   uint segment_index,
                                     uint base_address,
                                     uint segment_limit,
-                                    uint segment_type,
                                     uint descriptor_type,
                                     uint privilege_level,
                                     uint present,

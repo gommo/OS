@@ -36,6 +36,10 @@ struct stack start_stack = { &user_stack[PAGE_SIZE >> 2], KERNEL_DATA };
  * This will be the global tss structure
  */
 struct tss global_tss;
+/**
+ * This is our gdt (created in init.S)
+ */
+extern desc_table gdt;
 
 int k_main() // like main in a normal C program
 {
@@ -55,8 +59,10 @@ int k_main() // like main in a normal C program
 
     klprintf(19, "Entering while(1){}");
 
-    while(1){}
-    
+    //Enter temp idle loop
+    for (;;)
+        asm("hlt");
+
     return 0;    
 };
 
@@ -157,15 +163,25 @@ void restore_flags(ulong flags)
                     :: "r" (flags) : "memory");
 }
 
-void create_gdt_segment_selector(   uint segment_index,
-                                 uint base_address,
-                                 uint segment_limit,
-                                 uint segment_type,
-                                 uint descriptor_type,
-                                 uint privilege_level,
-                                 uint present,
-                                 uint granularity )
+void create_gdt_segment_descriptor(   uint segment_index,
+                                    uint base_address,
+                                    uint segment_limit,
+                                    uint segment_type,
+                                    uint privilege_level,
+                                    uint present,
+                                    uint granularity )
 {
-
+    gdt[segment_index].descripts.seg_descriptor.segment_limit_15_00 = segment_limit & 0x0000FFFF;
+    gdt[segment_index].descripts.seg_descriptor.base_address_15_00 = base_address & 0x0000FFFF;
+    gdt[segment_index].descripts.seg_descriptor.base_address_23_16 = (base_address & 0x00FF0000) >> 16;
+    gdt[segment_index].descripts.seg_descriptor.segment_type = segment_type;
+    gdt[segment_index].descripts.seg_descriptor.descriptor_type = 1; //Code OR Data
+    gdt[segment_index].descripts.seg_descriptor.dpl = privilege_level;
+    gdt[segment_index].descripts.seg_descriptor.present = present;
+    gdt[segment_index].descripts.seg_descriptor.segment_limit_15_00 = (segment_limit & 0x00FF0000) >> 16;
+    gdt[segment_index].descripts.seg_descriptor.avl = 1;
+    gdt[segment_index].descripts.seg_descriptor.zero = 0;
+    gdt[segment_index].descripts.seg_descriptor.granularity = granularity;
+    gdt[segment_index].descripts.seg_descriptor.base_address_31_24 = (base_address & 0xFF000000) >> 24;
 }
 

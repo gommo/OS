@@ -49,7 +49,27 @@
 #define OS_LEVEL        0x1
 #define LEVEL2          0x2
 #define LEVEL3          0x3
-#define APP_LEVEL       0x3
+#define USER_LEVEL       0x3
+
+/* Reference: Intel Arch Dev Manual 3  S:3.4.1-3 */
+
+#define     SINDEX_KERNEL_CODE      1
+#define     SINDEX_KERNEL_DATA      2
+#define     SINDEX_TSS              3
+#define     SINDEX_USER_CODE        4
+#define     SINDEX_USER_DATA        5
+
+#define     SINDEX(x)       (x << 3)
+
+#define     TABLE_GDT       (0 << 2)
+#define     TABLE_LDT       (1 << 2)
+
+/* Kernel Code Segment Selector Value */
+#define     KERNEL_CODE         ( SINDEX( SINDEX_KERNEL_CODE ) + TABLE_GDT + KERNEL_LEVEL )
+#define     KERNEL_DATA         ( SINDEX( SINDEX_KERNEL_DATA ) + TABLE_GDT + KERNEL_LEVEL )
+
+#define     USER_CODE           ( SINDEX( SINDEX_USER_CODE ) + TABLE_GDT + USER_LEVEL )
+#define     USER_DATA           ( SINDEX( SINDEX_USER_DATA ) + TABLE_GDT + USER_LEVEL )
 
 /**
  * IDT Descriptor and Call Gate Type enum
@@ -64,27 +84,25 @@ typedef enum { TASK_GATE = 0x05,
                TRAP_GATE = 0x0F,
                CALL_GATE = 0x0C } GATE_TYPE;
 
-/* Code and Data Segment Type Defines. These are structured in such
- * a way as to be able to bitwise OR them to a descriptor field after
- * ANDING WITH THE SEGMENT_TYPE_MASK
+/* Code and Data Segment Type Defines. 
  */
-#define SEGMENT_TYPE_MASK                           0xf0ff
-#define DATA_READONLY                               0xf0ff
-#define DATA_READONLY_ACCESSED                      0xf1ff
-#define DATA_READWRITE                              0xf2ff
-#define DATA_READWRITE_ACCESSED                     0xf3ff
-#define DATA_READONLY_EXPD                          0xf4ff
-#define DATA_READONLY_EXPD_ACCESSED                 0xf5ff
-#define DATA_READWRITE_EXPD                         0xf6ff
-#define DATA_READWRITE_EXPD_ACCESSED                0xf7ff
-#define CODE_EXECUTEONLY                            0xf8ff
-#define CODE_EXECUTEONLY_ACCESSED                   0xf9ff
-#define CODE_EXECUTEREAD                            0xfaff
-#define CODE_EXECUTEREAD_ACCESSED                   0xfbff
-#define CODE_EXECUTEONLY_CONFORMING                 0xfcff
-#define CODE_EXECUTEONLY_CONFORMING_ACCESSED        0xfdff
-#define CODE_EXECUTEREADONLY_CONFORMING             0xfeff
-#define CODE_EXECUTEREADONLY_CONFORMING_ACCESSED    0xffff
+#define CODE_SEGMENT                                ( 1 << 3 )
+#define DATA_SEGMENT                                ( 0 << 3 )
+
+#define EXPAND_DOWN                                 ( 1 << 2 )
+#define NON_EXPAND_DOWN                             ( 0 << 2 )
+#define READ_WRITE                                  ( 1 << 1 )
+#define READ_ONLY                                   ( 0 << 1 )
+#define ACCESSED                                    ( 1 << 0 )
+#define NOT_ACCESSED                                ( 0 << 0 )
+
+#define CONFORMING                                  ( 1 << 2 )
+#define NON_CONFORMING                              ( 0 << 2 )
+#define EXECUTE_ONLY                                ( 0 << 1 )
+#define EXECUTE_READ                                ( 1 << 1 )
+
+#define EXECUTE_READ_CODE_SEGMENT       (0x0000 + CODE_SEGMENT + EXECUTE_READ)
+#define READ_WRITE_DATA_SEGMENT         (0x0000 + DATA_SEGMENT + READ_WRITE)
 
 /** Page size for this processor */
 #define     PAGE_SIZE           4096
