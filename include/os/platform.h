@@ -56,7 +56,10 @@
 #define CODE_EXECUTEREADONLY_CONFORMING             0xfeff
 #define CODE_EXECUTEREADONLY_CONFORMING_ACCESSED    0xffff
 
+/** Page size for this processor */
+#define     PAGE_SIZE           4096
 
+/** This structure describes a descriptor used in the 386 processor */
 struct descriptor
 {
     unsigned long a, b;
