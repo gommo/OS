@@ -148,6 +148,9 @@
 					<File
 						RelativePath=".\include\os\mm\mm.h">
 					</File>
+					<File
+						RelativePath=".\include\os\mm\paging.h">
+					</File>
 				</Filter>
 				<Filter
 					Name="taskm"
@@ -210,6 +213,9 @@
 				Filter="">
 				<File
 					RelativePath=".\kernel\mm\mm.c">
+				</File>
+				<File
+					RelativePath=".\kernel\mm\paging.c">
 				</File>
 			</Filter>
 			<Filter

@@ -26,7 +26,8 @@ typedef enum {FALSE=0, TRUE=1} BOOL;
 #define FALSE   ((uchar)0)
 //#define NULL    ((void*)0)
 
-#define PACK __attribute__   ((pack))
+#define PACK        __attribute__   ((pack))
+#define ALIGN(x)    __attribute__   ((aligned (x)))
 
 #endif
 
