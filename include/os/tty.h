@@ -53,7 +53,6 @@ void init_tty();
  * @param uint TTY number
  * @return ptr to the tty device
  */
-
-}
+struct tty* get_tty(uint number);
 
 #endif

@@ -88,7 +88,7 @@ main_interrupt:
 											/* and pop off eip,cs,flags, ss, esp		*/
 	movl	%ebx, 4(%eax)					/* Move this value into esp0 of gloval_tss	*/
 	xor		%ebx, %ebx						/* Zero ebx									*/
-	movw	%ss, %ebx						/* Move our ss0 into ebx					*/
+	movw	%ss, %bx						/* Move our ss0 into ebx					*/
 	movl	%ebx, 8(%eax)					/* Move this value into ss0 of global_tss	*/
 		
 	// Pop our segment registers back off
