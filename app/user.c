@@ -32,5 +32,4 @@ void test_function(void* ptr)
     {
         klprintf(11, "In %s: %d", get_current_task_name(), my_loops++);
     }
-        //asm("hlt");
 }

@@ -65,7 +65,7 @@ static BOOL set_interrupt_handler(  GATE_TYPE type,
                                     ushort    segment_selector,
                                     ushort    privilege_level)
 {
-    static int count = 0;
+    //static int count = 0;
     //klprintf(10, "set_interrupt_handler called %d times", ++count);
     switch(type)
     {

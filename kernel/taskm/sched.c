@@ -252,7 +252,7 @@ void thread_switch(struct thread* new_thread)
     /* Update our global current_process to this process */
     current_process = current_thread->parent_process;
 
-    context_switch( &current->task_state, &new_thread->task_state, handled_new );
+    context_switch( (ulong*)&current->task_state, (ulong*)&new_thread->task_state, handled_new );
      
 }
 

@@ -15,10 +15,14 @@
 #define __TTY_H__
 
 #define         NO_TTY                          -1
+#define         TTY_0                           0
 #define         TTY_1                           1
 #define         TTY_2                           2
 #define         TTY_3                           3
-#define         TTY_4                           4
+
+#define         TTY_WIDTH                       80
+#define         TTY_HEIGHT                      25
+#define         BYTES_PER_CHARACTER             2
 
 /**
  * This structure contains the information needed about a tty device
@@ -30,8 +34,26 @@
  */
 struct tty
 {
-    uint number;                // tty number
-
+    /** TTY Number */
+    uint number;
+    /** This is the screen page in memory, currently we'll only have one */
+    uchar screen_page[TTY_WIDTH * TTY_HEIGHT * BYTES_PER_CHARACTER];
+    /** Line number we are at */
+    uint line_number;
 };
+
+/**
+ * Initialises the tty module 
+ */
+void init_tty();
+
+/**
+ * Returns a ptr to the tty device specified by the input number
+ *
+ * @param uint TTY number
+ * @return ptr to the tty device
+ */
+
+}
 
 #endif
