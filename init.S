@@ -17,7 +17,7 @@
 .text
 .align 4
 
-.global init
+.global init, idt, gdt
 .extern k_main, start_stack
 
 
@@ -36,6 +36,8 @@ init:
     /* Reset EFLAGS */
     pushl   $0
     popf
+
+    //sti
     
     call k_main                                 # Jump to our C code
 

@@ -65,4 +65,42 @@ struct descriptor
     unsigned long a, b;
 };
 
+typedef struct descriptor_table
+{
+    struct descriptor descriptor;
+} desc_table[256];
+
+extern desc_table idt, gdt;
+
+/*
+ * Some inline assembly functions for setting up platforms
+ * specific structures
+ */
+
+/**
+ * This function is used to set up an interrupt gate. See Interrupt Gate on
+ * page 153 of the Intel Arch Dev Manual II.
+ *
+ * @param unsigned int The interrupt number that this gate is
+ * @param void* The pointer to the function that handles the interrupt
+ */
+void inline set_interrupt_gate(unsigned int number, void* address)
+{
+    asm("movw %%dx, %%ax\n\t"  /* Moves offset 15..0 from dx to ax */
+        "movw %2, %%dx\n\t"    /* Moves 0x8E00 into dx */
+        "movl %%eax, %0\n\t"
+        "movl %%edx, %1\n\t"
+        ::  "o" ((char*)(&idt[number])), /* This parameter is the offset into the IDT */
+            "o" (4 + (char*)(&idt[number])),
+            "i" ((unsigned short)(0x8E00)), /* Hardcoded val for P,DPL, Type */
+            "d" (address), /* edx will contain the address of our handler */
+            "a" (0x00080000) /* This immediate value will go into eax and it
+                                is hardcoded so the high word is the segment
+                                selector  */
+       );
+    
+}
+
+                
+                
 #endif

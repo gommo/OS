@@ -9,7 +9,7 @@
  * interrupts to transfer control to the kernel to allow action to take 
  * place. 
  *
- * Compiler: gcc
+ * Compiler: Gas
  *
  * Author: Colin Goudie
  **************************************************************************/
@@ -18,8 +18,4 @@
 .global timer_interrupt
 
 timer_interrupt:
-    push    %ds          ;Save ds, es and fs
-    push    %es
-    push    %fs
-
 
